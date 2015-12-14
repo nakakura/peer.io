@@ -1,5 +1,5 @@
 
-describe("Target Neighbour", function() {
+describe("Target NeighbourIf", function() {
     beforeEach(function(done) {
         done();
     });

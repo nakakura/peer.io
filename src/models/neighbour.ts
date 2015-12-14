@@ -16,7 +16,7 @@ module Model{
         data = 2
     }
 
-    export interface Neighbour{
+    export interface NeighbourIf{
         type(): NeighbourTypeEnum;
         peerID(): string;
         connected(): boolean;
@@ -27,7 +27,7 @@ module Model{
         close(): void;
     }
 
-    export class DataNeighbour extends EventEmitter2 implements Neighbour{
+    export class DataNeighbour extends EventEmitter2 implements NeighbourIf{
         private _dataChannel: PeerJs.DataConnection = null;
         private _connected = false;
         OnDataReceivedEvent = "DataFromNeighbour";
@@ -84,7 +84,7 @@ module Model{
         }
     }
 
-    export class VideoNeighbour extends EventEmitter2 implements Neighbour{
+    export class VideoNeighbour extends EventEmitter2 implements NeighbourIf{
         private _mediaConnection: PeerJs.MediaConnection = null;
         private _streamCount = 0;
         private _connected = false;
@@ -150,7 +150,7 @@ module Model{
     }
 
     export class NeighbourFactory {
-        static createNeighbour(peerID: string, type: NeighbourTypeEnum): Neighbour{
+        static createNeighbour(peerID: string, type: NeighbourTypeEnum): NeighbourIf{
             switch (type){
                 case NeighbourTypeEnum.video:
                     return new VideoNeighbour(peerID);
