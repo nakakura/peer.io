@@ -108,6 +108,7 @@ module Model{
             this._connected = false;
 
             call.on('stream', (stream)=>{
+                console.log("on stream");
                 this._streamCount++;
                 this._mediaConnection = stream;
                 this._connected = true;

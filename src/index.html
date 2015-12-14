@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+    <META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+    <meta http-equiv="Expires" content="Thu, 01 Dec 1994 16:00:00 GMT">
+    <meta charset="UTF-8">
+    <title>peer.io</title>
+
+    <!-- build:js src/minify.js -->
+    <script src="./bower_components/jquery/dist/jquery.js"></script>
+    <script src="./bower_components/offline/offline.js"></script>
+    <script src="./bower_components/lodash/lodash.js"></script>
+    <script src="./bower_components/eventemitter2/lib/eventemitter2.js"></script>
+    <script src="./bower_components/peerjs/peer.js"></script>
+    <script src="./models/states/offline_state.js"></script>
+    <script src="./models/states/online_state.js"></script>
+    <script src="./models/states/connected_state.js"></script>
+    <script src="./models/states/wait_closing_state.js"></script>
+    <script src="./models/states/peerjs_state.js"></script>
+    <script src="./models/neighbour.js"></script>
+    <script src="./models/target_neighbours.js"></script>
+    <script src="./models/peerjs_manager.js"></script>
+    <!-- endbuild -->
+
+    <script type="text/javascript">
+        localStorage.clear();
+
+        function getQueryString() {
+            if (1 < document.location.search.length) {
+                var query = document.location.search.substring(1);
+                var parameters = query.split('&');
+                var result = new Object();
+                for (var i = 0; i < parameters.length; i++) {
+                    var element = parameters[i].split('=');
+                    var paramName = decodeURIComponent(element[0]);
+                    var paramValue = decodeURIComponent(element[1]);
+                    result[paramName] = decodeURIComponent(paramValue);
+                }
+                return result;
+            }
+            return null;
+        }
+
+        window.onload = function(){
+            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+            navigator.getUserMedia({
+                audio: true,
+                video: true
+            }, function (stream) {
+                window.localStream = stream;
+
+
+                var query = getQueryString();
+
+                var peer = new Peer(query['id'], {
+                    config: {"iceServers":[
+                        {"url": "stun:stun.skyway.io:3478"}
+                    ]},
+                    host: 'robo.paas.jp-e1.cloudn-service.com',
+                    port: 443,
+                    secure: true,
+                    key: 'DEl4XWDPustUHICCl8cZ',
+                    debug: 3});
+
+                var targetNeighbours = new Model.TargetNeighbours();
+
+                var neighbour = Model.NeighbourFactory.createNeighbour(query['target'], Model.NeighbourTypeEnum.video);
+                neighbour.setSource(stream);
+                targetNeighbours.addNeighbour(neighbour);
+                console.log("hogehoge");
+                console.log(targetNeighbours.targetNeighbours());
+                var peerManager = new Model.PeerJsManager(peer, targetNeighbours);
+
+
+            }, function () {
+            }, function () {
+            });
+
+            Offline.options = {checks: {xhr: {url: 'https://skyway.io/dist/0.3/peer.min.js'}}};
+            console.log(Offline.state);
+            Offline.check();
+
+
+        };
+    </script>
+</head>
+<body>
+<video id="leftVideo" name="leftVideo" autoplay width="640" height="480" class="left"></video>
+<video id="rightVideo" name="rightVideo" autoplay width="640" heigh="480"></video>
+<div class="clear"></div>
+<div id="comment" name="comment"></div>
+</body>
+</html>

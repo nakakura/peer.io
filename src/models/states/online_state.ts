@@ -5,7 +5,6 @@
 /// <reference path="./peerjs_state.ts" />
 /// <reference path="./offline_state.ts" />
 /// <reference path="./connected_state.ts" />
-/// <reference path="./offline_request_state.ts" />
 
 module Model{
     export class OnlineState implements PeerJsStateIf{
@@ -17,10 +16,6 @@ module Model{
 
         peer(state: PeerJsStateManager, isConnected: boolean){
             if(isConnected) state.setStateObject(new ConnectedState());
-        }
-
-        request(state: PeerJsStateManager, isRequired: boolean){
-            if(isRequired) state.setStateObject(new OnlineRequestState());
         }
     }
 }

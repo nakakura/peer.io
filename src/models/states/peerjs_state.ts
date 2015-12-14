@@ -7,11 +7,9 @@
 module Model{
     export enum PeerJsStateEnum{
         initial = 1,
-        offline_request = 2,
-        online = 4,
-        online_request = 3,
-        connected = 8,
-        connected_request = 7
+        online = 2,
+        connected = 3,
+        wait_closing = 4
     }
 
     export class PeerJsStateManager extends EventEmitter2{
@@ -45,6 +43,5 @@ module Model{
         state(): PeerJsStateEnum;
         network(state: PeerJsStateManager, isOnline: boolean): void;
         peer(state: PeerJsStateManager, isConnected: boolean): void;
-        request(state: PeerJsStateManager, isRequired: boolean): void;
     }
 }

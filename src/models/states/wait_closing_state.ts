@@ -4,19 +4,18 @@
 /// <reference path="../../typings/tsd.d.ts" />
 /// <reference path="./peerjs_state.ts" />
 /// <reference path="./offline_state.ts" />
-/// <reference path="./wait_closing_state.ts" />
+/// <reference path="./connected_state.ts" />
 
 module Model{
-    export class ConnectedState implements PeerJsStateIf{
-        state(){ return PeerJsStateEnum.connected };
+    export class WaitClosingState implements PeerJsStateIf{
+        state(){ return PeerJsStateEnum.wait_closing };
 
         network(state: PeerJsStateManager, isOnline: boolean){
-            if(!isOnline) state.setStateObject(new WaitClosingState());
+            if(isOnline) state.setStateObject(new ConnectedState());
         }
 
         peer(state: PeerJsStateManager, isConnected: boolean){
-            if(!isConnected) state.setStateObject(new OnlineState());
+            if(!isConnected) state.setStateObject(new OfflineState());
         }
     }
 }
-

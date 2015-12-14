@@ -26,17 +26,22 @@ module Model{
         }
 
         addNeighbour(neighbour: NeighbourIf){
+            console.log(neighbour);
             var lastOne = _.find(this._neighbours, (item: NeighbourIf)=>{
+                console.log('hogehoge===');
                 return item.peerID() === neighbour.peerID() && item.type() === neighbour.type();
             });
 
             if(lastOne) {
                 this.emit(this._ON_NEED_CLOSE_P2P, neighbour);
+                console.log("return====");
                 return;
             }
 
             this._neighbours.push(neighbour);
-            if(!neighbour.connected) this.emit(this._ON_NEED_ESTABLISH_P2P, neighbour);
+            console.log(this._neighbours);
+            console.log(this.targetNeighbours());
+            if(!neighbour.connected()) this.emit(this._ON_NEED_ESTABLISH_P2P, neighbour);
         }
 
         removeNeighbour(neighbourName: string){
@@ -45,13 +50,15 @@ module Model{
             });
 
             _.each(removeNeighbours, (neighbour: NeighbourIf)=>{
-                if(neighbour.connected) this.emit(this._ON_NEED_CLOSE_P2P, neighbour);
+                if(neighbour.connected()) this.emit(this._ON_NEED_CLOSE_P2P, neighbour);
             });
         }
 
         targetNeighbours(): Array<NeighbourIf>{
+            console.log("in target neighbours");
+            console.log(this._neighbours);
             var neighbours = _.filter(this._neighbours, (neighbour: NeighbourIf)=>{
-                return !neighbour.connected;
+                return !neighbour.connected();
             });
 
             return neighbours;

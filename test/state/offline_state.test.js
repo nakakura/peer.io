@@ -36,22 +36,4 @@ describe("online state", function() {
         expect(state.state()).to.deep.equal(Model.PeerJsStateEnum.initial);
         done();
     });
-
-    it ("remove request", function(done) {
-        expect(state.state()).to.deep.equal(Model.PeerJsStateEnum.initial);
-        state.stateObject().request(state, false);
-        expect(state.state()).to.deep.equal(Model.PeerJsStateEnum.initial);
-        done();
-    });
-
-    it ("add request", function(done) {
-        expect(state.state()).to.deep.equal(Model.PeerJsStateEnum.initial);
-        state.onStateChanged(function(changedState){
-            expect(changedState).to.deep.equal(Model.PeerJsStateEnum.offline_request);
-            done();
-        });
-        state.stateObject().request(state, true);
-        expect(state.state()).to.deep.equal(Model.PeerJsStateEnum.offline_request);
-        done();
-    });
 });

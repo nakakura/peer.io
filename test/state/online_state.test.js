@@ -39,22 +39,4 @@ describe("offline state", function() {
         state.stateObject().peer(state, true);
         expect(state.state()).to.deep.equal(Model.PeerJsStateEnum.connected);
     });
-
-    it ("remove request", function(done) {
-        expect(state.state()).to.deep.equal(Model.PeerJsStateEnum.online);
-        state.stateObject().request(state, false);
-        expect(state.state()).to.deep.equal(Model.PeerJsStateEnum.online);
-        done();
-    });
-
-    it ("add request", function(done) {
-        expect(state.state()).to.deep.equal(Model.PeerJsStateEnum.online);
-        state.onStateChanged(function(changedState){
-            expect(changedState).to.deep.equal(Model.PeerJsStateEnum.online_request);
-            done();
-        });
-        state.stateObject().request(state, true);
-        expect(state.state()).to.deep.equal(Model.PeerJsStateEnum.online_request);
-        done();
-    });
 });
