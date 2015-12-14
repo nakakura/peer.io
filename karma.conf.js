@@ -15,11 +15,12 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      "./src/bower_components/offline/offline.js",
       "./src/bower_components/peerjs/peer.js",
       "./src/bower_components/jquery/dist/jquery.js",
       "./src/bower_components/lodash/lodash.js",
       "./src/bower_components/eventemitter2/lib/eventemitter2.js",
-      'src/models/*.js',
+      'src/models/**/*.js',
       'src/views/*.js',
       'src/controllers/*.js',
       'test/**/*.test.js'

@@ -9,8 +9,6 @@
 /// <reference path="./target_neighbours.ts" />
 
 module Model{
-
-
     export class PeerJsState extends EventEmitter2{
         constructor(private _peer:PeerJs.Peer, private _targetNeighbours: TargetNeighbours) {
             super();
@@ -25,5 +23,4 @@ module Model{
 
         };
     }
-
 }
