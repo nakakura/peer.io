@@ -1,0 +1,13 @@
+.DS_Store
+.DS_Store?
+.idea
+.idea?
+*.iml
+*.js
+*.js.map
+node_modules
+/src/bower_components
+/src/typings
+!/karma.conf.js
+!/gulpfile.js
+!/test/**

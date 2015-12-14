@@ -1,0 +1,102 @@
+{
+  "version": "v4",
+  "repo": "borisyankov/DefinitelyTyped",
+  "ref": "master",
+  "path": "typings",
+  "bundle": "typings/tsd.d.ts",
+  "installed": {
+    "skyway/skyway.d.ts": {
+      "commit": "6baa15a0d760170b4aeefab68d581a1ea4034aa6"
+    },
+    "webrtc/RTCPeerConnection.d.ts": {
+      "commit": "fb2b3b1e068c9ff7d8f9b0851c08d37d96c95c38"
+    },
+    "webrtc/MediaStream.d.ts": {
+      "commit": "fb2b3b1e068c9ff7d8f9b0851c08d37d96c95c38"
+    },
+    "jquery/jquery.d.ts": {
+      "commit": "6baa15a0d760170b4aeefab68d581a1ea4034aa6"
+    },
+    "eventemitter2/eventemitter2.d.ts": {
+      "commit": "977da240f263e88215a27cb44f2e31524ca07135"
+    },
+    "filesystem/filesystem.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "filewriter/filewriter.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx-lite.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.all.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.aggregates.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.binding.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.time-lite.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.async-lite.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.time.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.coincidence-lite.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.binding-lite.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.async.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.coincidence.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.joinpatterns.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.virtualtime.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.backpressure.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.experimental.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.testing.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.backpressure-lite.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "rx/rx.lite.d.ts": {
+      "commit": "983126e131a2b81739053d60e4bbdbb46d6577b7"
+    },
+    "geometry-dom/geometry-dom.d.ts": {
+      "commit": "e5a27ea95e47b95333784f1f0d590127b4e39a89"
+    },
+    "lodash/lodash.d.ts": {
+      "commit": "a278148f0ec80f2aa9a2ec22f5089308f74dda47"
+    },
+    "es6-promise/es6-promise.d.ts": {
+      "commit": "3a6e1b8988eba0ba74fe4db20c950242552857e2"
+    },
+    "webvr-api/webvr-api.d.ts": {
+      "commit": "e5a27ea95e47b95333784f1f0d590127b4e39a89"
+    },
+    "threejs/three.d.ts": {
+      "commit": "e5a27ea95e47b95333784f1f0d590127b4e39a89"
+    }
+  }
+}
