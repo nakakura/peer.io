@@ -10,6 +10,7 @@
 /// <reference path="states/peerjs_state.ts" />
 /// <reference path="states/connected_state.ts" />
 /// <reference path="./offline.d.ts" />
+/// <reference path="./Util.ts" />
 
 module Model{
     type NeighbourSourceContainer = {[key: string]: NeighboursSource};
@@ -48,12 +49,12 @@ module Model{
             this._defaultStream = [];
         }
 
-        addSource(sourceId: string, source: NeighboursSource){
+        addNeighboursSource(sourceId: string, source: NeighboursSource){
             if(this._neighbourSources.hasOwnProperty(sourceId)) return;
             this._neighbourSources[sourceId] = source;
         }
 
-        removeSource(sourceId: string){
+        removeNeighboursSource(sourceId: string){
             if(!this._neighbourSources.hasOwnProperty(sourceId)) return;
             delete this._neighbourSources[sourceId];
         }
@@ -81,7 +82,7 @@ module Model{
             this._peer.on('call', this._onRecvCall);
         }
 
-        public onOnline = (isOnline: boolean)=>{
+        private _onOnline = (isOnline: boolean)=>{
             this._state.stateObject().network(this._state, isOnline);
         };
 
@@ -106,7 +107,7 @@ module Model{
                     break;
                 case PeerJsStateEnum.connected:
                     console.log("connected state");
-                    setTimeout(this._establishAllPeer, this._waitTime(0, 2000));
+                    setTimeout(this._establishAllPeer, Util.waitTime(0, 2000));
                     break;
                 case PeerJsStateEnum.wait_closing:
                     console.log("wait closing state");
@@ -124,8 +125,6 @@ module Model{
         };
 
         private _tryCall(neighbour: VideoNeighbour){
-            console.log('trycall in peerjs manager');
-            console.log(neighbour.peerID());
             var sources = neighbour.sources();
             var mediaConnection = this._peer.call(neighbour.peerID(), sources[0]);
             neighbour.setChannel(mediaConnection);
@@ -134,12 +133,7 @@ module Model{
 
         private _onRecvCall = (mediaConnection: PeerJs.MediaConnection)=> {
             var neighbourID = mediaConnection.peer;
-            console.log("anser");
-            console.log(this._defaultStream[0]);
             mediaConnection.answer(this._defaultStream[0]);
-            _(this._defaultStream).tail().each((stream: MediaStream)=>{
-                (<any>mediaConnection).addStream(stream);
-            });
 
             var targets = this._targetNeighbours();
 
@@ -179,9 +173,7 @@ module Model{
         //=============establishing p2p link end=================
         //=============util start================================
 
-        private _waitTime(min: number, max: number): number{
-            return min + Math.random() * (max - min);
-        }
+
 
         private _targetNeighbours(): NeighboursArray{
             return _.reduce(this._neighbourSources, (container: NeighboursArray, val: NeighboursSource, key: string)=>{

@@ -19,7 +19,7 @@ module PeerIo{
 
             this._targetNeighbours = new Model.TargetNeighbours();
             this._peerJsManager = new Model.PeerJsManager(peerJs);
-            this._peerJsManager.addSource("targetNeighbours", this._targetNeighbours.targetNeighbours);
+            this._peerJsManager.addNeighboursSource("targetNeighbours", this._targetNeighbours.targetNeighbours);
             this._peerJsManager.onLinkEstablished = this.onLinkEstablish;
         }
 

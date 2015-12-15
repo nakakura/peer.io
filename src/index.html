@@ -21,6 +21,7 @@
     <script src="./models/neighbour.js"></script>
     <script src="./models/target_neighbours.js"></script>
     <script src="./models/peerjs_manager.js"></script>
+    <script src="./models/Util.js"></script>
     <script src="./peer.io.js"></script>
     <!-- endbuild -->
 
@@ -44,13 +45,10 @@
         }
 
         window.onload = function(){
-            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-            navigator.getUserMedia({
-                audio: true,
-                video: true
-            }, function (stream) {
-                window.localStream = stream;
-
+            function startPeerIo(streams){
+                var newStream = new webkitMediaStream();
+                newStream.addTrack(streams[0].getVideoTracks()[0]);
+                newStream.addTrack(streams[1].getVideoTracks()[0]);
                 var query = getQueryString();
 
                 var peer = new Peer(query['id'], {
@@ -64,22 +62,49 @@
                     debug: 0});
 
                 var peerIo = new PeerIo.PeerIo(peer);
-                peerIo.addDefaultStream(stream);
+                peerIo.addDefaultStream(newStream);
+
+                var counter = 0;
                 peerIo.onStream = function(peerId, stream){
-                    console.log("onstream 2 ===");
-                    $("#leftVideo").get(0).src = window.URL.createObjectURL(stream);
+                    var tracks = stream.getVideoTracks();
+                    if(tracks.length > 1){
+                        $("#leftVideo").get(0).src = window.URL.createObjectURL(stream);
+                        var nn = new webkitMediaStream();
+                        nn.addTrack(tracks[1]);
+                        $("#rightVideo").get(0).src = window.URL.createObjectURL(stream);
+                    }
+                    else $("#leftVideo").get(0).src = window.URL.createObjectURL(nn);
+                    counter ++;
                 };
-                peerIo.addNeighbour(query['target'], Model.NeighbourTypeEnum.video, stream);
+
+                peerIo.addNeighbour(query['target'], Model.NeighbourTypeEnum.video, newStream);
+            }
+
+            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+            navigator.getUserMedia({
+                audio: true,
+                video: true
+            }, function (stream) {
+                navigator.getUserMedia({
+                    audio: true,
+                    video: true
+                }, function (stream2) {
+                    var array=[];
+                    array.push(stream);
+                    array.push(stream2);
+                    startPeerIo(array);
+                }, function () {
+                }, function (err) {
+                });
             }, function () {
-            }, function () {
+            }, function (err) {
             });
 
             Offline.options = {checks: {xhr: {url: 'https://skyway.io/dist/0.3/peer.min.js'}}};
             console.log(Offline.state);
             Offline.check();
-
-
         };
+
     </script>
 </head>
 <body>

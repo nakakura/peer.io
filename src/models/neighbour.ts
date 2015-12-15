@@ -8,6 +8,7 @@
 //6. 切断時のChannelのクロージングはこのクラスで行う
 
 /// <reference path="../typings/tsd.d.ts" />
+/// <reference path="./Util.ts" />
 
 module Model{
     import MediaConnection = PeerJs.MediaConnection;
@@ -105,10 +106,10 @@ module Model{
 
     export class VideoNeighbour extends EventEmitter2 implements NeighbourIf{
         private _mediaConnection: PeerJs.MediaConnection = null;
-        private _streamCount = 0;
         private _connected = false;
         private _sources: Array<MediaStream> = [];
         private _callbacks: Array<MediaCallback> = [];
+        private _doesAllStreamAdded = false;
 
         constructor(private _peerID: string) {
             super();
@@ -126,14 +127,26 @@ module Model{
             console.log("set channel");
             this._mediaConnection = call;
             this._connected = false;
+            this._doesAllStreamAdded;
 
             call.on('stream', (stream)=>{
-                console.log("on stream");
-                this._streamCount++;
+                console.log("on stream in neighbour========########");
                 this._mediaConnection = stream;
                 this._connected = true;
                 console.log("callbacks");
                 console.log(this._callbacks);
+                if(!this._doesAllStreamAdded){
+                    this._doesAllStreamAdded = true;
+
+                    setTimeout(()=>{
+                        _(this._sources).tail().each((stream: MediaStream)=>{
+                            console.log("うしろのstream");
+                            console.log(stream);
+                            (<any>call).pc.addStream(stream);
+                            console.log(call);
+                        }).value();
+                    }, Util.waitTime(0, 2000));
+                }
                 _.each(this._callbacks, (callback: MediaCallback)=>{
                     console.log("on stream 1.1");
                     callback(this._peerID, stream);
