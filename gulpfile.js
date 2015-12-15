@@ -45,19 +45,12 @@ gulp.task('tsc', function(){
 });
 
 gulp.task( 'html', function() {
-    return gulp.src( '*.html' )
+    return gulp.src( 'src/*.html' )
         .pipe( usemin( {
             css: [ minifyCss() ],
             js:[ uglify() ]
         } ) )
-        .pipe( gulp.dest( '../../dist' ) );
+        .pipe( gulp.dest( 'dist' ) );
 } );
 
-var shell = require('gulp-shell');
 
-gulp.task('push-submodule', shell.task([
-    'git add -A',
-    "git commit -m 'update'",
-    "git push origin master -f"
-    ], { cwd: '../../dist' }
-));

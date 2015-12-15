@@ -1,0 +1,28 @@
+{
+  "name": "peer.io",
+  "description": "",
+  "main": "dist/minify.js",
+  "authors": [
+    "Toshiya Nakakura <nakakura@me.com>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "PeerJs",
+    "SkyWay",
+    "WebRTC"
+  ],
+  "homepage": "https://github.com/nakakura/peer.io",
+  "moduleType": [],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "gulpfile.js",
+    "karma.conf.js",
+    "package.json",
+    "src"
+  ]
+}
