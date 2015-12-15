@@ -12,23 +12,64 @@
 /// <reference path="./offline.d.ts" />
 
 module Model{
+    type NeighbourSourceContainer = {[key: string]: NeighboursSource};
+
     export class PeerJsManager extends EventEmitter2{
         private _state: PeerJsStateManager;
+        private _neighbourSources: NeighbourSourceContainer = {};
+        private _defaultStream: MediaStream[] = [];
 
-        constructor(private _peer: PeerJs.Peer, private _targetNeighbours: TargetNeighbours) {
+        constructor(private _peer: PeerJs.Peer) {
             super();
 
             this._state = new PeerJsStateManager();
             this._state.onStateChanged(this._onStateChanged);
-            console.log("offlinestate");
-            console.log(Offline.state);
             if(Offline.state === 'up'){
-                console.log("up state");
                 this._state.stateObject().network(this._state, true);
             }
 
+            (<any>Offline).on('up', ()=>{
+                this._state.stateObject().network(this._state, true);
+            });
+
+            (<any>Offline).on('down', ()=>{
+                this._state.stateObject().network(this._state, false);
+            });
+
             this._wrapPeerEvent();
         }
+
+        addDefaultStream(streams: MediaStream | MediaStream[]){
+            if(streams instanceof Array) Array.prototype.push.apply(this._defaultStream, streams);
+            else this._defaultStream.push(<MediaStream>streams);
+        }
+
+        clearDefaultStream(){
+            this._defaultStream = [];
+        }
+
+        addSource(sourceId: string, source: NeighboursSource){
+            if(this._neighbourSources.hasOwnProperty(sourceId)) return;
+            this._neighbourSources[sourceId] = source;
+        }
+
+        removeSource(sourceId: string){
+            if(!this._neighbourSources.hasOwnProperty(sourceId)) return;
+            delete this._neighbourSources[sourceId];
+        }
+
+        establishLink = (neighbour: Model.NeighbourIf)=>{
+            switch(neighbour.type()){
+                case NeighbourTypeEnum.video:
+                    this._tryCall(<VideoNeighbour>neighbour);
+                    break;
+                case NeighbourTypeEnum.data:
+                    this._tryConnect(<DataNeighbour>neighbour);
+                    break;
+            }
+        };
+
+        onLinkEstablished = (neighbour: Model.NeighbourIf)=>{};
 
         //=============peer event and change state start=========
 
@@ -40,7 +81,7 @@ module Model{
             this._peer.on('call', this._onRecvCall);
         }
 
-        public online = (isOnline: boolean)=>{
+        public onOnline = (isOnline: boolean)=>{
             this._state.stateObject().network(this._state, isOnline);
         };
 
@@ -55,19 +96,20 @@ module Model{
         private _onStateChanged = (state: PeerJsStateEnum)=>{
             switch (state){
                 case PeerJsStateEnum.initial:
+                    console.log("initial state");
                     break;
                 case PeerJsStateEnum.online:
-                    console.log("online state====");
-                    console.log(this._peer.disconnected);
+                    console.log("online state");
                     if(!this._peer.disconnected) {
                         this._state.stateObject().peer(this._state, true);
                     }
                     break;
                 case PeerJsStateEnum.connected:
-                    console.log("connected state====");
-                    setTimeout(this._establishPeer, this._waitTime(0, 2000));
+                    console.log("connected state");
+                    setTimeout(this._establishAllPeer, this._waitTime(0, 2000));
                     break;
                 case PeerJsStateEnum.wait_closing:
+                    console.log("wait closing state");
                     break;
                 default:
                     break;
@@ -77,52 +119,36 @@ module Model{
         //=============peer event and change state end===========
         //=============establishing p2p link start===============
 
-        private _establishPeer = ()=>{
-            console.log("establish peer");
-            console.log(this._targetNeighbours.targetNeighbours());
-            _.each(this._targetNeighbours.targetNeighbours(), (neighbour: NeighbourIf)=>{
-                console.log(neighbour.peerID());
-                switch(neighbour.type()){
-                    case NeighbourTypeEnum.video:
-                        this._tryCall(<VideoNeighbour>neighbour);
-                        break;
-                    case NeighbourTypeEnum.data:
-                        this._tryConnect(<DataNeighbour>neighbour);
-                        break;
-                }
-            });
+        private _establishAllPeer = ()=>{
+            _.each(this._targetNeighbours(), this.establishLink);
         };
 
         private _tryCall(neighbour: VideoNeighbour){
-            console.log("tryCall");
+            console.log('trycall in peerjs manager');
+            console.log(neighbour.peerID());
             var sources = neighbour.sources();
             var mediaConnection = this._peer.call(neighbour.peerID(), sources[0]);
-            console.log((<any>mediaConnection).peerConnection);
-            /*
-            _(sources).tail().each((source: MediaStream)=>{
-            }).value();
-            */
-
             neighbour.setChannel(mediaConnection);
+            this.onLinkEstablished(neighbour);
         }
 
-        private _onRecvCall = (mediaStream: PeerJs.MediaConnection)=> {
-            console.log("onrecvcall====");
-            var neighborID = mediaStream.peer;
-            mediaStream.answer((<any>window).localStream);
-
-            var neighbor: NeighbourIf = _.find(this._targetNeighbours.targetNeighbours(), (neighbor: NeighbourIf)=> {
-                return neighbor.peerID() === neighborID && neighbor.type() === NeighbourTypeEnum.video;
+        private _onRecvCall = (mediaConnection: PeerJs.MediaConnection)=> {
+            var neighbourID = mediaConnection.peer;
+            console.log("anser");
+            console.log(this._defaultStream[0]);
+            mediaConnection.answer(this._defaultStream[0]);
+            _(this._defaultStream).tail().each((stream: MediaStream)=>{
+                (<any>mediaConnection).addStream(stream);
             });
 
-            if (!neighbor) {
-                console.log("none");
-                neighbor = NeighbourFactory.createNeighbour(neighborID, NeighbourTypeEnum.video);
-                this._targetNeighbours.addNeighbour(neighbor);
-                neighbor.setChannel(mediaStream);
-            } else {
-                console.log("ある");
-                mediaStream.close();
+            var targets = this._targetNeighbours();
+
+            if(targets.hasOwnProperty(neighbourID) && targets[neighbourID].type() === NeighbourTypeEnum.video){
+                mediaConnection.close();
+            } else{
+                var neighbour = NeighbourFactory.createNeighbour(neighbourID, NeighbourTypeEnum.video);
+                neighbour.setChannel(mediaConnection);
+                this.onLinkEstablished(neighbour);
             }
         };
 
@@ -134,29 +160,33 @@ module Model{
             });
 
             neighbour.setChannel(dataChannel);
+            this.onLinkEstablished(neighbour);
         }
 
         private _onRecvConnect = (dataconnection: PeerJs.DataConnection)=> {
-            console.log("recvconnect==============");
-            var neighborID = dataconnection.peer;
+            var neighbourID = dataconnection.peer;
+            var targets = this._targetNeighbours();
 
-            var neighbour: NeighbourIf = _.find(this._targetNeighbours.targetNeighbours(), (neighbor: NeighbourIf)=> {
-                return neighbor.peerID() === neighborID && neighbor.type() === NeighbourTypeEnum.data;
-            });
-
-            if (!neighbour) {
-                neighbour = NeighbourFactory.createNeighbour(neighborID, NeighbourTypeEnum.data);
-                this._targetNeighbours.addNeighbour(neighbour);
-                neighbour.setChannel(dataconnection);
-            } else{
+            if(targets.hasOwnProperty(neighbourID) && targets[neighbourID].type() === NeighbourTypeEnum.video){
                 dataconnection.close();
+            } else{
+                var neighbour = NeighbourFactory.createNeighbour(neighbourID, NeighbourTypeEnum.data);
+                neighbour.setChannel(dataconnection);
+                this.onLinkEstablished(neighbour);
             }
         };
 
         //=============establishing p2p link end=================
+        //=============util start================================
 
         private _waitTime(min: number, max: number): number{
             return min + Math.random() * (max - min);
+        }
+
+        private _targetNeighbours(): NeighboursArray{
+            return _.reduce(this._neighbourSources, (container: NeighboursArray, val: NeighboursSource, key: string)=>{
+                return $.extend(container, val());
+            }, []);
         }
     }
 }

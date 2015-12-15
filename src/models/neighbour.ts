@@ -11,10 +11,18 @@
 
 module Model{
     import MediaConnection = PeerJs.MediaConnection;
+
+    export type NeighboursArray = Array<NeighbourIf>;
+    export type NeighboursSource = ()=>NeighboursArray;
+    export type DataCallback = (peerId: string, message: string)=>void;
+    export type MediaCallback = (peerId: string, stream: MediaStream)=>void;
+
     export enum NeighbourTypeEnum{
         video = 1,
         data = 2
     }
+
+
 
     export interface NeighbourIf{
         type(): NeighbourTypeEnum;
@@ -25,12 +33,15 @@ module Model{
         setSource(source: MediaStream | Array<MediaStream>);
         send(message: string);
         close(): void;
+
+        onStream: (callback: MediaCallback)=>void;
+        onData: (callback: DataCallback)=>void;
     }
 
     export class DataNeighbour extends EventEmitter2 implements NeighbourIf{
         private _dataChannel: PeerJs.DataConnection = null;
         private _connected = false;
-        OnDataReceivedEvent = "DataFromNeighbour";
+        private _callbacks: DataCallback[] = [];
 
         constructor(private _peerID: string) {
             super();
@@ -64,8 +75,10 @@ module Model{
                 this._connected = false;
             });
 
-            dataChannel.on('data', (data)=>{
-                this.emit(this.OnDataReceivedEvent, data);
+            dataChannel.on('data', (data: string)=>{
+                _.each(this._callbacks, (callback: DataCallback)=>{
+                    callback(this._peerID, data);
+                });
             });
         }
 
@@ -82,6 +95,12 @@ module Model{
             this._dataChannel = null;
             this._connected = false;
         }
+
+        onStream = (callback: MediaCallback)=>{};
+
+        onData = (callback: DataCallback)=>{
+            this._callbacks.push(callback);
+        };
     }
 
     export class VideoNeighbour extends EventEmitter2 implements NeighbourIf{
@@ -89,7 +108,7 @@ module Model{
         private _streamCount = 0;
         private _connected = false;
         private _sources: Array<MediaStream> = [];
-        OnMediaReceivedEvent = "MediaFromNeighbour";
+        private _callbacks: Array<MediaCallback> = [];
 
         constructor(private _peerID: string) {
             super();
@@ -104,6 +123,7 @@ module Model{
         sources(){ return this._sources; }
 
         setChannel(call: PeerJs.MediaConnection){
+            console.log("set channel");
             this._mediaConnection = call;
             this._connected = false;
 
@@ -112,7 +132,12 @@ module Model{
                 this._streamCount++;
                 this._mediaConnection = stream;
                 this._connected = true;
-                this.emit(this.OnMediaReceivedEvent, this._streamCount, stream);
+                console.log("callbacks");
+                console.log(this._callbacks);
+                _.each(this._callbacks, (callback: MediaCallback)=>{
+                    console.log("on stream 1.1");
+                    callback(this._peerID, stream);
+                });
             });
 
             call.on('close', ()=>{
@@ -127,18 +152,8 @@ module Model{
         }
 
         setSource(source: MediaStream | Array<MediaStream>){
-            if(source instanceof Array) this._setMultipleSources(<Array<MediaStream>> source);
-            else this._setSingleSource(<MediaStream> source);
-        }
-
-        _setSingleSource(source: MediaStream){
-            this._sources.push(source);
-        }
-
-        _setMultipleSources(sources: Array<MediaStream>){
-            _.each(sources, (source)=>{
-                this._setSingleSource(source);
-            });
+            if(source instanceof Array) Array.prototype.push.apply(this._sources, source);
+            else this._sources.push(<MediaStream>source);
         }
 
         send(message: string){}
@@ -148,6 +163,14 @@ module Model{
             this._mediaConnection = null;
             this._connected = false;
         }
+
+        onStream = (callback: MediaCallback)=>{
+            console.log("先に格納してる");
+            this._callbacks.push(callback);
+            console.log(this._callbacks);
+        };
+
+        onData = (callback: DataCallback)=>{};
     }
 
     export class NeighbourFactory {

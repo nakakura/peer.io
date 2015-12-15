@@ -18,7 +18,7 @@ describe("offline state", function() {
         expect(state.state()).to.deep.equal(Model.PeerJsStateEnum.initial);
     });
 
-    it ("become online", function(done) {
+    it ("become onOnline", function(done) {
         expect(state.state()).to.deep.equal(Model.PeerJsStateEnum.online);
         done();
     });

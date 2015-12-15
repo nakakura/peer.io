@@ -21,6 +21,7 @@
     <script src="./models/neighbour.js"></script>
     <script src="./models/target_neighbours.js"></script>
     <script src="./models/peerjs_manager.js"></script>
+    <script src="./peer.io.js"></script>
     <!-- endbuild -->
 
     <script type="text/javascript">
@@ -50,7 +51,6 @@
             }, function (stream) {
                 window.localStream = stream;
 
-
                 var query = getQueryString();
 
                 var peer = new Peer(query['id'], {
@@ -61,18 +61,15 @@
                     port: 443,
                     secure: true,
                     key: 'DEl4XWDPustUHICCl8cZ',
-                    debug: 3});
+                    debug: 0});
 
-                var targetNeighbours = new Model.TargetNeighbours();
-
-                var neighbour = Model.NeighbourFactory.createNeighbour(query['target'], Model.NeighbourTypeEnum.video);
-                neighbour.setSource(stream);
-                targetNeighbours.addNeighbour(neighbour);
-                console.log("hogehoge");
-                console.log(targetNeighbours.targetNeighbours());
-                var peerManager = new Model.PeerJsManager(peer, targetNeighbours);
-
-
+                var peerIo = new PeerIo.PeerIo(peer);
+                peerIo.addDefaultStream(stream);
+                peerIo.onStream = function(peerId, stream){
+                    console.log("onstream 2 ===");
+                    $("#leftVideo").get(0).src = window.URL.createObjectURL(stream);
+                };
+                peerIo.addNeighbour(query['target'], Model.NeighbourTypeEnum.video, stream);
             }, function () {
             }, function () {
             });

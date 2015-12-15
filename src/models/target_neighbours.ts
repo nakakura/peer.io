@@ -9,7 +9,7 @@
 
 module Model{
     export class TargetNeighbours extends EventEmitter2{
-        private _neighbours: Array<NeighbourIf> = [];
+        private _neighbours: NeighboursArray = [];
         private _ON_NEED_ESTABLISH_P2P = "onNeedEstablishP2P";
         private _ON_NEED_CLOSE_P2P = "onNeedCloseP2P";
 
@@ -26,21 +26,16 @@ module Model{
         }
 
         addNeighbour(neighbour: NeighbourIf){
-            console.log(neighbour);
             var lastOne = _.find(this._neighbours, (item: NeighbourIf)=>{
-                console.log('hogehoge===');
                 return item.peerID() === neighbour.peerID() && item.type() === neighbour.type();
             });
 
             if(lastOne) {
                 this.emit(this._ON_NEED_CLOSE_P2P, neighbour);
-                console.log("return====");
                 return;
             }
 
             this._neighbours.push(neighbour);
-            console.log(this._neighbours);
-            console.log(this.targetNeighbours());
             if(!neighbour.connected()) this.emit(this._ON_NEED_ESTABLISH_P2P, neighbour);
         }
 
@@ -54,15 +49,12 @@ module Model{
             });
         }
 
-        targetNeighbours(): Array<NeighbourIf>{
-            console.log("in target neighbours");
-            console.log(this._neighbours);
+        targetNeighbours = ()=>{
             var neighbours = _.filter(this._neighbours, (neighbour: NeighbourIf)=>{
                 return !neighbour.connected();
             });
 
             return neighbours;
-        }
+        };
     }
 }
-

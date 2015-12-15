@@ -6,7 +6,7 @@ describe("Target NeighbourIf", function() {
 
     it ("addNeighbour-needConnect", function(done) {
         var neighbor = {
-            connected: false,
+            connected: function(){ return false; },
             peerID: function () {
                 return "addNeighbour-needConnect";
             },
@@ -38,7 +38,7 @@ describe("Target NeighbourIf", function() {
 
     it ("addNeighbour-noNeedConnect", function(done) {
         var neighbor = {
-            connected: true,
+            connected: function(){ return true; },
             peerID: function () {
                 return "addNeighbour-noNeedConnect";
             },
@@ -71,7 +71,7 @@ describe("Target NeighbourIf", function() {
 
     it ("removeNeighbour-needConnect", function() {
         var neighbor = {
-            connected: false,
+            connected: function(){ return false; },
             peerID: function () {
                 return "removeNeighbour-needConnect";
             },
@@ -122,7 +122,7 @@ describe("Target NeighbourIf", function() {
 
     it ("removeNeighbour-noNeedConnect", function(done) {
         var neighbor = {
-            connected: true,
+            connected: function(){ return true },
             peerID: function () {
                 return "removeNeighbour-noNeedConnect";
             },
@@ -169,7 +169,7 @@ describe("Target NeighbourIf", function() {
         expect(targetNeighbours.targetNeighbours()).to.deep.equal([]);
 
         var connected = {
-            connected: true,
+            connected: function(){ return true; },
             peerID: function () {
                 return "connected"
             },
@@ -181,7 +181,7 @@ describe("Target NeighbourIf", function() {
         expect(targetNeighbours.targetNeighbours()).to.deep.equal([]);
 
         var notConnected = {
-            connected: false,
+            connected: function(){ return false; },
             peerID: function () {
                 return "disconnected";
             },

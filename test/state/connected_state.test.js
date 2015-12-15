@@ -15,7 +15,7 @@ describe("connected state", function() {
         done();
     });
 
-    it ("become online", function(done) {
+    it ("become onOnline", function(done) {
         state.stateObject().network(state, true);
         expect(state.state()).to.deep.equal(Model.PeerJsStateEnum.connected);
         done();

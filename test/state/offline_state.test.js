@@ -1,5 +1,5 @@
 
-describe("online state", function() {
+describe("onOnline state", function() {
     var state;
 
     beforeEach(function(done) {
@@ -14,7 +14,7 @@ describe("online state", function() {
         done();
     });
 
-    it ("become online", function(done) {
+    it ("become onOnline", function(done) {
         state.onStateChanged(function(changedState){
             expect(changedState).to.deep.equal(Model.PeerJsStateEnum.online);
             done();
