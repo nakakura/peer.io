@@ -11,4 +11,5 @@ node_modules
 !/karma.conf.js
 !/gulpfile.js
 !/test/**
-!/dist/minify.js
+!/dist/dependencies.js
+!/dist/peer.io.js
