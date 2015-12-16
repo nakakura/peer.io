@@ -7,12 +7,14 @@
     <meta charset="UTF-8">
     <title>peer.io</title>
 
-    <!-- build:js minify.js -->
+    <!-- build:dependeny dependencies.js -->
     <script src="./bower_components/jquery/dist/jquery.js"></script>
     <script src="./bower_components/offline/offline.js"></script>
     <script src="./bower_components/lodash/lodash.js"></script>
     <script src="./bower_components/eventemitter2/lib/eventemitter2.js"></script>
     <script src="./bower_components/peerjs/peer.js"></script>
+    <!-- endbuild -->
+    <!-- build:js peer.io.js -->
     <script src="./models/states/offline_state.js"></script>
     <script src="./models/states/online_state.js"></script>
     <script src="./models/states/connected_state.js"></script>
@@ -21,7 +23,7 @@
     <script src="./models/neighbour.js"></script>
     <script src="./models/target_neighbours.js"></script>
     <script src="./models/peerjs_manager.js"></script>
-    <script src="./models/Util.js"></script>
+    <script src="models/util.js"></script>
     <script src="./peer.io.js"></script>
     <!-- endbuild -->
 
@@ -100,7 +102,7 @@
             }, function (err) {
             });
 
-            Offline.options = {checks: {xhr: {url: 'https://skyway.io/dist/0.3/peer.min.js'}}};
+
             console.log(Offline.state);
             Offline.check();
         };

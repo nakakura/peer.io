@@ -97,6 +97,9 @@
     },
     "threejs/three.d.ts": {
       "commit": "8ea42cd8bb11863ed6f242d67c502288ebc45a7b"
+    },
+    "offline-js/offline-js.d.ts": {
+      "commit": "24e12a7af994afa2226af70fbfae0adc78736a9e"
     }
   }
 }

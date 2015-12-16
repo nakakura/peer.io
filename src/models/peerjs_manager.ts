@@ -9,8 +9,7 @@
 /// <reference path="./target_neighbours.ts" />
 /// <reference path="states/peerjs_state.ts" />
 /// <reference path="states/connected_state.ts" />
-/// <reference path="./offline.d.ts" />
-/// <reference path="./Util.ts" />
+/// <reference path="./util.ts" />
 
 module Model{
     type NeighbourSourceContainer = {[key: string]: NeighboursSource};
@@ -25,19 +24,35 @@ module Model{
 
             this._state = new PeerJsStateManager();
             this._state.onStateChanged(this._onStateChanged);
-            if(Offline.state === 'up'){
-                this._state.stateObject().network(this._state, true);
-            }
 
-            (<any>Offline).on('up', ()=>{
+            this._checkNetworkStatus();
+            this._wrapPeerEvent();
+        }
+
+        private _checkNetworkStatus(){
+            Offline.options = {
+                checks: {
+                    xhr: {
+                        url: 'https://skyway.io/dist/0.3/peer.min.js'
+                    }
+                },
+                reconnect: {
+                    initialDelay: 3,
+                    delay: 1.5
+                }
+            };
+
+            Offline.on('up', ()=>{
                 this._state.stateObject().network(this._state, true);
             });
 
-            (<any>Offline).on('down', ()=>{
+            Offline.on('down', ()=>{
                 this._state.stateObject().network(this._state, false);
             });
 
-            this._wrapPeerEvent();
+            if(Offline.state === 'up'){
+                this._state.stateObject().network(this._state, true);
+            }
         }
 
         addDefaultStream(streams: MediaStream | MediaStream[]){
@@ -172,8 +187,6 @@ module Model{
 
         //=============establishing p2p link end=================
         //=============util start================================
-
-
 
         private _targetNeighbours(): NeighboursArray{
             return _.reduce(this._neighbourSources, (container: NeighboursArray, val: NeighboursSource, key: string)=>{

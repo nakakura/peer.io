@@ -164,7 +164,8 @@ describe("DataNeighbour", function() {
 
         expect(spy_on.getCall(3).args[0]).to.deep.equal("data");
         var onData = spy_on.getCall(3).args[1];
-        dataNeighbour.addListener(dataNeighbour.OnDataReceivedEvent, function(data){
+        dataNeighbour.onData(function(senderID, data){
+            expect(senderID).to.deep.equal(peerID);
             expect(data).to.deep.equal(sendMessage);
             done();
         });

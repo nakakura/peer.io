@@ -48,7 +48,8 @@ gulp.task( 'html', function() {
     return gulp.src( 'src/*.html' )
         .pipe( usemin( {
             css: [ minifyCss() ],
-            js:[ uglify() ]
+            js:[ uglify() ],
+            dependeny:[ uglify() ]
         } ) )
         .pipe( gulp.dest( 'dist' ) );
 } );
