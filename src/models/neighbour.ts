@@ -10,7 +10,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 /// <reference path="./util.ts" />
 
-module Model{
+module PeerIo{
     import MediaConnection = PeerJs.MediaConnection;
     export type NeighboursArray = Array<NeighbourTemplate>;
     export type NeighboursSource = ()=>NeighboursArray;

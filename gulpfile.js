@@ -25,7 +25,7 @@ gulp.task('tsd', function (callback) {
 });
 
 gulp.task('bower', function() {
-    return bower({ directory: './bower_components', cwd: './src' });
+    return bower({ directory: './src/bower_components', cwd: './' });
 });
 
 gulp.task('tsc', function(){
@@ -49,7 +49,7 @@ gulp.task( 'html', function() {
         .pipe( usemin( {
             css: [ minifyCss() ],
             js:[ uglify() ],
-            dependeny:[ uglify() ]
+            dependency:[ uglify() ],
         } ) )
         .pipe( gulp.dest( 'dist' ) );
 } );

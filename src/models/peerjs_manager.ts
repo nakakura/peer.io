@@ -11,7 +11,7 @@
 /// <reference path="states/connected_state.ts" />
 /// <reference path="./util.ts" />
 
-module Model{
+module PeerIo{
     type NeighbourSourceContainer = {[key: string]: NeighboursSource};
 
     export class PeerJsManager extends EventEmitter2{
@@ -69,7 +69,7 @@ module Model{
             delete this._neighbourSources[sourceId];
         }
 
-        establishLink = (neighbour: Model.NeighbourTemplate)=>{
+        establishLink = (neighbour: NeighbourTemplate)=>{
             console.log("establishlink");
             switch(neighbour.type()){
                 case NeighbourTypeEnum.video:

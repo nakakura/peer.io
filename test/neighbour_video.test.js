@@ -14,21 +14,21 @@ describe("videoNeighbour", function() {
     });
 
     it ("constructor", function(done) {
-        var videoNeighbour = new Model.VideoNeighbour(peerID);
+        var videoNeighbour = new PeerIo.VideoNeighbour(peerID);
         expect(videoNeighbour.peerID()).to.deep.equal(peerID);
-        expect(videoNeighbour.type()).to.deep.equal(Model.NeighbourTypeEnum.video);
+        expect(videoNeighbour.type()).to.deep.equal(PeerIo.NeighbourTypeEnum.video);
         done();
     });
 
     it ("single source", function(done) {
-        var videoNeighbour = new Model.VideoNeighbour(peerID);
+        var videoNeighbour = new PeerIo.VideoNeighbour(peerID);
         videoNeighbour.setSource({hoge: "hoge"});
         expect(videoNeighbour.sources()).to.deep.equal([{hoge: "hoge"}]);
         done();
     });
 
     it ("multiple sources", function(done) {
-        var videoNeighbour = new Model.VideoNeighbour(peerID);
+        var videoNeighbour = new PeerIo.VideoNeighbour(peerID);
         var sources = [];
         sources.push({hoge: "hoge"});
         sources.push({hoge: "moge"});
@@ -38,7 +38,7 @@ describe("videoNeighbour", function() {
     });
 
     it ("setChannel-send", function(done) {
-        var videoNeighbour = new Model.VideoNeighbour(peerID);
+        var videoNeighbour = new PeerIo.VideoNeighbour(peerID);
         var spy_on = sinon.spy(mediastream, "on");
         var spy_send = sinon.spy(mediastream, "send");
         videoNeighbour.setChannel(mediastream);
@@ -56,7 +56,7 @@ describe("videoNeighbour", function() {
     });
 
     it ("setChannel-null", function(done) {
-        var dataNeighbour = new Model.DataNeighbour(peerID);
+        var dataNeighbour = new PeerIo.DataNeighbour(peerID);
         var spy_on = sinon.spy(mediastream, "on");
         var spy_send = sinon.spy(mediastream, "send");
         dataNeighbour.setChannel(null);

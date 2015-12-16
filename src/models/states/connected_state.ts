@@ -6,7 +6,7 @@
 /// <reference path="./offline_state.ts" />
 /// <reference path="./wait_closing_state.ts" />
 
-module Model{
+module PeerIo{
     export class ConnectedState implements PeerJsStateIf{
         state(){ return PeerJsStateEnum.connected };
 

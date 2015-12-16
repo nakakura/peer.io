@@ -28,7 +28,7 @@ describe("PeerJsManager", function() {
 
     it ("connect in offline - onOnline - connected", function(done) {
         var spy_peer_on = sinon.spy(peer, "on");
-        var peerJsManager = new Model.PeerJsManager(peer, targetNeighbors);
+        var peerJsManager = new PeerIo.PeerJsManager(peer, targetNeighbors);
 
         expect(spy_target_onEstablish.callCount).to.deep.equal(0);
         expect(spy_target_onClose.callCount).to.deep.equal(0);
@@ -42,7 +42,7 @@ describe("PeerJsManager", function() {
         //onopenのあとNeedsEstablishを送る
         var neighbor = {
             type: function(){
-                return Model.NeighborTypeEnum.data;
+                return PeerIo.NeighborTypeEnum.data;
             },
             setChannel: function(channel){  },
             peerID: function(){ return "hoge"}
@@ -57,7 +57,7 @@ describe("PeerJsManager", function() {
         var spy_peer_on = sinon.spy(peer, "on");
         var spy_target_on = sinon.spy(targetNeighbors, "on");
 
-        var peerJsManager = new Model.PeerJsManager(peer, targetNeighbors);
+        var peerJsManager = new PeerIo.PeerJsManager(peer, targetNeighbors);
 
         expect(spy_target_on.callCount).to.deep.equal(0);
         //open
@@ -71,7 +71,7 @@ describe("PeerJsManager", function() {
         //onopenのあとNeedsEstablishを送る
         var neighbor = {
             type: function () {
-                return Model.NeighborTypeEnum.video;
+                return PeerIo.NeighborTypeEnum.video;
             },
             setChannel: function (channel) {
                 console.log("channel");

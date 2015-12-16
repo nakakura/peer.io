@@ -4,7 +4,7 @@
 /// <reference path="../../typings/tsd.d.ts" />
 /// <reference path="./offline_state.ts" />
 
-module Model{
+module PeerIo{
     export enum PeerJsStateEnum{
         initial = 1,
         online = 2,

@@ -5,7 +5,7 @@
 /// <reference path="./peerjs_state.ts" />
 /// <reference path="./online_state.ts" />
 
-module Model{
+module PeerIo{
     export class OfflineState implements PeerJsStateIf{
         state(){ return PeerJsStateEnum.initial };
 

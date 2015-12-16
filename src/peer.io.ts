@@ -9,9 +9,6 @@
 /// <reference path="models/peerjs_manager.ts" />
 
 module PeerIo{
-    import NeighbourIf = Model.NeighbourTemplate;
-    import NeighbourTemplate = Model.NeighbourTemplate;
-
     export var OnVideoLinkUp = "onVideoLinkUp";
     export var OnVideoLinkDown = "onVideoLinkDown";
     export var OnRecvVideo = "onRecvVideo";
@@ -30,13 +27,13 @@ module PeerIo{
     type MediaListener = (peerId: string, stream: MediaStream)=>void;
 
     export class PeerIo extends EventEmitter2{
-        private _peerJsManager: Model.PeerJsManager;
-        private _targetNeighbours: Model.TargetNeighbours;
+        private _peerJsManager: PeerJsManager;
+        private _targetNeighbours: TargetNeighbours;
 
         constructor(peerJs: PeerJs.Peer){
             super();
-            this._targetNeighbours = new Model.TargetNeighbours();
-            this._peerJsManager = new Model.PeerJsManager(peerJs);
+            this._targetNeighbours = new TargetNeighbours();
+            this._peerJsManager = new PeerJsManager(peerJs);
             this._peerJsManager.addNeighboursSource("targetNeighbours", this._targetNeighbours.targetNeighbours);
             this._peerJsManager.on(this._peerJsManager.ON_LINK_ESTABLISHED, this._onLinkEstablish);
         }
@@ -45,23 +42,23 @@ module PeerIo{
             this._peerJsManager.addDefaultStream(mediaStream);
         }
 
-        addNeighbour(peerId: string, type: Model.NeighbourTypeEnum, stream?: MediaStream | MediaStream[]){
-            var neighbour = Model.NeighbourFactory.createNeighbour(peerId, type);
+        addNeighbour(peerId: string, type: NeighbourTypeEnum, stream?: MediaStream | MediaStream[]){
+            var neighbour = NeighbourFactory.createNeighbour(peerId, type);
             if(stream) neighbour.setSource(stream);
             this._targetNeighbours.addNeighbour(neighbour);
         }
 
         private _onLinkEstablish = (neighbour: NeighbourTemplate)=>{
             switch(neighbour.type()){
-                case Model.NeighbourTypeEnum.video:
+                case NeighbourTypeEnum.video:
                     this.emit(OnVideoLinkUp, neighbour.peerID());
-                    neighbour.on(Model.OnStream, (stream)=>{ this.emit(OnRecvVideo, neighbour.peerID(), stream); });
-                    neighbour.on(Model.OnNeighbourDown, ()=>{ this.emit(OnVideoLinkDown, neighbour.peerID()); });
+                    neighbour.on(OnStream, (stream)=>{ this.emit(OnRecvVideo, neighbour.peerID(), stream); });
+                    neighbour.on(OnNeighbourDown, ()=>{ this.emit(OnVideoLinkDown, neighbour.peerID()); });
                     break;
-                case Model.NeighbourTypeEnum.data:
+                case NeighbourTypeEnum.data:
                     this.emit(OnDataLinkUp, neighbour.peerID());
-                    neighbour.on(Model.OnData, (stream)=>{ this.emit(OnRecvData, neighbour.peerID(), stream); });
-                    neighbour.on(Model.OnNeighbourDown, ()=>{ this.emit(OnDataLinkDown, neighbour.peerID()); });
+                    neighbour.on(OnData, (stream)=>{ this.emit(OnRecvData, neighbour.peerID(), stream); });
+                    neighbour.on(OnNeighbourDown, ()=>{ this.emit(OnDataLinkDown, neighbour.peerID()); });
                     break;
             }
         };

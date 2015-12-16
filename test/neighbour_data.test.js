@@ -14,22 +14,22 @@ describe("DataNeighbour", function() {
     });
 
     it ("constructor", function(done) {
-        var dataNeighbour = new Model.DataNeighbour(peerID);
+        var dataNeighbour = new PeerIo.DataNeighbour(peerID);
         expect(dataNeighbour.peerID()).to.deep.equal(peerID);
-        expect(dataNeighbour.type()).to.deep.equal(Model.NeighbourTypeEnum.data);
+        expect(dataNeighbour.type()).to.deep.equal(PeerIo.NeighbourTypeEnum.data);
         expect(dataNeighbour.connected()).to.deep.equal(false);
         done();
     });
 
     it ("source", function(done) {
-        var dataNeighbour = new Model.DataNeighbour(peerID);
+        var dataNeighbour = new PeerIo.DataNeighbour(peerID);
         dataNeighbour.setSource({hoge: "hoge"});
         expect(dataNeighbour.sources()).to.deep.equal([]);
         done();
     });
 
     it ("setChannel-send", function(done) {
-        var dataNeighbour = new Model.DataNeighbour(peerID);
+        var dataNeighbour = new PeerIo.DataNeighbour(peerID);
         var spy_on = sinon.spy(dataChannel, "on");
         var spy_send = sinon.spy(dataChannel, "send");
         dataNeighbour.setChannel(dataChannel);
@@ -55,7 +55,7 @@ describe("DataNeighbour", function() {
     });
 
     it ("setChannel-close", function(done) {
-        var dataNeighbour = new Model.DataNeighbour(peerID);
+        var dataNeighbour = new PeerIo.DataNeighbour(peerID);
         var spy_on = sinon.spy(dataChannel, "on");
         var spy_send = sinon.spy(dataChannel, "send");
         dataNeighbour.setChannel(dataChannel);
@@ -87,7 +87,7 @@ describe("DataNeighbour", function() {
     });
 
     it ("setChannel-error", function(done) {
-        var dataNeighbour = new Model.DataNeighbour(peerID);
+        var dataNeighbour = new PeerIo.DataNeighbour(peerID);
         var spy_on = sinon.spy(dataChannel, "on");
         var spy_send = sinon.spy(dataChannel, "send");
         dataNeighbour.setChannel(dataChannel);
@@ -114,7 +114,7 @@ describe("DataNeighbour", function() {
     });
 
     it ("setChannel-error", function(done) {
-        var dataNeighbour = new Model.DataNeighbour(peerID);
+        var dataNeighbour = new PeerIo.DataNeighbour(peerID);
         var spy_on = sinon.spy(dataChannel, "on");
         var spy_send = sinon.spy(dataChannel, "send");
         dataNeighbour.setChannel(dataChannel);
@@ -141,7 +141,7 @@ describe("DataNeighbour", function() {
     });
 
     it ("setChannel-null", function(done) {
-        var dataNeighbour = new Model.DataNeighbour(peerID);
+        var dataNeighbour = new PeerIo.DataNeighbour(peerID);
         var spy_on = sinon.spy(dataChannel, "on");
         var spy_send = sinon.spy(dataChannel, "send");
         dataNeighbour.setChannel(null);
@@ -156,7 +156,7 @@ describe("DataNeighbour", function() {
     });
 
     it ("setChannel-data", function(done) {
-        var dataNeighbour = new Model.DataNeighbour(peerID);
+        var dataNeighbour = new PeerIo.DataNeighbour(peerID);
         var spy_on = sinon.spy(dataChannel, "on");
 
         dataNeighbour.setChannel(dataChannel);
@@ -164,7 +164,7 @@ describe("DataNeighbour", function() {
 
         expect(spy_on.getCall(3).args[0]).to.deep.equal("data");
         var onData = spy_on.getCall(3).args[1];
-        dataNeighbour.on(Model.OnData, function(data){
+        dataNeighbour.on(PeerIo.OnData, function(data){
             expect(data).to.deep.equal(sendMessage);
             done();
         });

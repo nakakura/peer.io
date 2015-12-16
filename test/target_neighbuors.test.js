@@ -11,10 +11,10 @@ describe("Target NeighbourTemplate", function() {
                 return "addNeighbour-needConnect";
             },
             type: function(){
-                return Model.NeighbourTypeEnum.video;
+                return PeerIo.NeighbourTypeEnum.video;
             }
         };
-        var targetNeighbours = new Model.TargetNeighbours();
+        var targetNeighbours = new PeerIo.TargetNeighbours();
         //1回目add
         targetNeighbours.onNeedEstablishLink(function(neighbor){
             expect(neighbor).to.equal(neighbor);
@@ -43,10 +43,10 @@ describe("Target NeighbourTemplate", function() {
                 return "addNeighbour-noNeedConnect";
             },
             type: function(){
-                return Model.NeighbourTypeEnum.video;
+                return PeerIo.NeighbourTypeEnum.video;
             }
         };
-        var targetNeighbours = new Model.TargetNeighbours();
+        var targetNeighbours = new PeerIo.TargetNeighbours();
 
         //1回目add
         targetNeighbours.onNeedEstablishLink(function(neighbor){
@@ -76,10 +76,10 @@ describe("Target NeighbourTemplate", function() {
                 return "removeNeighbour-needConnect";
             },
             type: function(){
-                return Model.NeighbourTypeEnum.video;
+                return PeerIo.NeighbourTypeEnum.video;
             }
         };
-        var targetNeighbours = new Model.TargetNeighbours();
+        var targetNeighbours = new PeerIo.TargetNeighbours();
 
         //1回目remove
         targetNeighbours.onNeedEstablishLink(function(neighbor){
@@ -127,10 +127,10 @@ describe("Target NeighbourTemplate", function() {
                 return "removeNeighbour-noNeedConnect";
             },
             type: function(){
-                return Model.NeighbourTypeEnum.video;
+                return PeerIo.NeighbourTypeEnum.video;
             }
         };
-        var targetNeighbours = new Model.TargetNeighbours();
+        var targetNeighbours = new PeerIo.TargetNeighbours();
 
         //1回目remove
         targetNeighbours.onNeedEstablishLink(function(neighbor){
@@ -165,7 +165,7 @@ describe("Target NeighbourTemplate", function() {
     });
 
     it ("targetNeighbours", function() {
-        var targetNeighbours = new Model.TargetNeighbours();
+        var targetNeighbours = new PeerIo.TargetNeighbours();
         expect(targetNeighbours.targetNeighbours()).to.deep.equal([]);
 
         var connected = {
@@ -174,7 +174,7 @@ describe("Target NeighbourTemplate", function() {
                 return "connected"
             },
             type: function(){
-                return Model.NeighbourTypeEnum.video;
+                return PeerIo.NeighbourTypeEnum.video;
             }
         };
         targetNeighbours.addNeighbour(connected);
@@ -186,7 +186,7 @@ describe("Target NeighbourTemplate", function() {
                 return "disconnected";
             },
             type: function(){
-                return Model.NeighbourTypeEnum.video;
+                return PeerIo.NeighbourTypeEnum.video;
             }
         };
         targetNeighbours.addNeighbour(notConnected);

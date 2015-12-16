@@ -7,7 +7,7 @@
 /// <reference path="../typings/tsd.d.ts" />
 /// <reference path="./neighbour.ts" />
 
-module Model{
+module PeerIo{
     export class TargetNeighbours extends EventEmitter2{
         private _neighbours: NeighboursArray = [];
         private _ON_NEED_ESTABLISH_P2P = "onNeedEstablishP2P";
