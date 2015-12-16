@@ -9,27 +9,36 @@
 /// <reference path="models/peerjs_manager.ts" />
 
 module PeerIo{
-    import NeighbourIf = Model.NeighbourIf;
+    import NeighbourIf = Model.NeighbourTemplate;
+    import NeighbourTemplate = Model.NeighbourTemplate;
+
+    export var OnVideoLinkUp = "onVideoLinkUp";
+    export var OnVideoLinkDown = "onVideoLinkDown";
+    export var OnRecvVideo = "onRecvVideo";
+    export var OnDataLinkUp = "onDataLinkUp";
+    export var OnDataLinkDown = "onDataLinkDown";
+    export var OnRecvData = "onRecvData";
 
     export enum EventTypeEnum{
-        video = 1,
-        data = 2
+        videoLinkUp = 1,
+        recvVideo = 2,
+        dataLinkUp = 3,
+        recvData = 4
     }
 
     type DataListener = (peerId: string, message: string)=>void;
     type MediaListener = (peerId: string, stream: MediaStream)=>void;
 
-    export class PeerIo{
+    export class PeerIo extends EventEmitter2{
         private _peerJsManager: Model.PeerJsManager;
         private _targetNeighbours: Model.TargetNeighbours;
-        private _dataListener: Array<DataListener> = [];
-        private _mediaListener: Array<MediaListener> = [];
 
         constructor(peerJs: PeerJs.Peer){
+            super();
             this._targetNeighbours = new Model.TargetNeighbours();
             this._peerJsManager = new Model.PeerJsManager(peerJs);
             this._peerJsManager.addNeighboursSource("targetNeighbours", this._targetNeighbours.targetNeighbours);
-            this._peerJsManager.onLinkEstablished = this.onLinkEstablish;
+            this._peerJsManager.on(this._peerJsManager.ON_LINK_ESTABLISHED, this._onLinkEstablish);
         }
 
         addDefaultStream(mediaStream: MediaStream | MediaStream[]){
@@ -42,58 +51,20 @@ module PeerIo{
             this._targetNeighbours.addNeighbour(neighbour);
         }
 
-        onLinkEstablish = (neighbour: NeighbourIf)=>{
+        private _onLinkEstablish = (neighbour: NeighbourTemplate)=>{
             switch(neighbour.type()){
                 case Model.NeighbourTypeEnum.video:
-                    neighbour.onStream(this._notifyMedia);
+                    this.emit(OnVideoLinkUp, neighbour.peerID());
+                    neighbour.on(Model.OnStream, (stream)=>{ this.emit(OnRecvVideo, neighbour.peerID(), stream); });
+                    neighbour.on(Model.OnNeighbourDown, ()=>{ this.emit(OnVideoLinkDown, neighbour.peerID()); });
                     break;
                 case Model.NeighbourTypeEnum.data:
-                    neighbour.onData(this._notifyData);
+                    this.emit(OnDataLinkUp, neighbour.peerID());
+                    neighbour.on(Model.OnData, (stream)=>{ this.emit(OnRecvData, neighbour.peerID(), stream); });
+                    neighbour.on(Model.OnNeighbourDown, ()=>{ this.emit(OnDataLinkDown, neighbour.peerID()); });
                     break;
             }
         };
-
-        on(event: EventTypeEnum, listener: MediaListener | DataListener) {
-            switch(event){
-                case EventTypeEnum.video:
-                    this._mediaListener.push(<MediaListener>listener);
-                    break;
-                case EventTypeEnum.data:
-                    this._dataListener.push(<DataListener>listener);
-                    break;
-            }
-        }
-
-        off(event: EventTypeEnum, listener: MediaListener | DataListener){
-            var array: Array<MediaListener | DataListener> = [];
-
-            switch(event){
-                case EventTypeEnum.video:
-                    array = this._mediaListener;
-                    break;
-                case EventTypeEnum.data:
-                    array = this._dataListener;
-                    break;
-            }
-
-            var index = _.findIndex(array, (item)=>{
-                return item == listener;
-            });
-
-            if(index !== -1) array.splice(index, 1);
-        }
-
-        private _notifyMedia(neighbourID: string, stream: MediaStream){
-            _.each(this._mediaListener, (listener)=>{
-                listener(neighbourID, stream);
-            });
-        }
-
-        private _notifyData(neighbourID: string, message: string){
-            _.each(this._dataListener, (listener)=>{
-                listener(neighbourID, message);
-            });
-        }
     }
 }
 

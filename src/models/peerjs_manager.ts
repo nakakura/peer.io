@@ -15,6 +15,7 @@ module Model{
     type NeighbourSourceContainer = {[key: string]: NeighboursSource};
 
     export class PeerJsManager extends EventEmitter2{
+        public ON_LINK_ESTABLISHED = "onLinkEstablished";
         private _state: PeerJsStateManager;
         private _neighbourSources: NeighbourSourceContainer = {};
         private _defaultStream: MediaStream[] = [];
@@ -30,29 +31,23 @@ module Model{
         }
 
         private _checkNetworkStatus(){
-            Offline.options = {
-                checks: {
-                    xhr: {
-                        url: 'https://skyway.io/dist/0.3/peer.min.js'
-                    }
-                },
-                reconnect: {
-                    initialDelay: 3,
-                    delay: 1.5
-                }
-            };
+            (<any>Offline).options = { checks: { xhr: { url: 'https://skyway.io/dist/0.3/peer.min.js' } } };
 
             Offline.on('up', ()=>{
+                console.log("offline up");
                 this._state.stateObject().network(this._state, true);
             });
 
             Offline.on('down', ()=>{
+                console.log("offline down");
                 this._state.stateObject().network(this._state, false);
             });
 
             if(Offline.state === 'up'){
                 this._state.stateObject().network(this._state, true);
             }
+
+            Offline.check();
         }
 
         addDefaultStream(streams: MediaStream | MediaStream[]){
@@ -74,7 +69,8 @@ module Model{
             delete this._neighbourSources[sourceId];
         }
 
-        establishLink = (neighbour: Model.NeighbourIf)=>{
+        establishLink = (neighbour: Model.NeighbourTemplate)=>{
+            console.log("establishlink");
             switch(neighbour.type()){
                 case NeighbourTypeEnum.video:
                     this._tryCall(<VideoNeighbour>neighbour);
@@ -84,8 +80,6 @@ module Model{
                     break;
             }
         };
-
-        onLinkEstablished = (neighbour: Model.NeighbourIf)=>{};
 
         //=============peer event and change state start=========
 
@@ -112,20 +106,16 @@ module Model{
         private _onStateChanged = (state: PeerJsStateEnum)=>{
             switch (state){
                 case PeerJsStateEnum.initial:
-                    console.log("initial state");
                     break;
                 case PeerJsStateEnum.online:
-                    console.log("online state");
                     if(!this._peer.disconnected) {
                         this._state.stateObject().peer(this._state, true);
                     }
                     break;
                 case PeerJsStateEnum.connected:
-                    console.log("connected state");
                     setTimeout(this._establishAllPeer, Util.waitTime(0, 2000));
                     break;
                 case PeerJsStateEnum.wait_closing:
-                    console.log("wait closing state");
                     break;
                 default:
                     break;
@@ -140,13 +130,15 @@ module Model{
         };
 
         private _tryCall(neighbour: VideoNeighbour){
+            console.log("trycall");
             var sources = neighbour.sources();
             var mediaConnection = this._peer.call(neighbour.peerID(), sources[0]);
             neighbour.setChannel(mediaConnection);
-            this.onLinkEstablished(neighbour);
+            this.emit(this.ON_LINK_ESTABLISHED, neighbour);
         }
 
         private _onRecvCall = (mediaConnection: PeerJs.MediaConnection)=> {
+            console.log("onrecvcall");
             var neighbourID = mediaConnection.peer;
             mediaConnection.answer(this._defaultStream[0]);
 
@@ -157,7 +149,7 @@ module Model{
             } else{
                 var neighbour = NeighbourFactory.createNeighbour(neighbourID, NeighbourTypeEnum.video);
                 neighbour.setChannel(mediaConnection);
-                this.onLinkEstablished(neighbour);
+                this.emit(this.ON_LINK_ESTABLISHED, neighbour);
             }
         };
 
@@ -168,11 +160,13 @@ module Model{
                 reliable: false
             });
 
+            console.log("tryconnect");
             neighbour.setChannel(dataChannel);
-            this.onLinkEstablished(neighbour);
+            this.emit(this.ON_LINK_ESTABLISHED, neighbour);
         }
 
         private _onRecvConnect = (dataconnection: PeerJs.DataConnection)=> {
+            console.log("onrecvconnect");
             var neighbourID = dataconnection.peer;
             var targets = this._targetNeighbours();
 
@@ -181,7 +175,7 @@ module Model{
             } else{
                 var neighbour = NeighbourFactory.createNeighbour(neighbourID, NeighbourTypeEnum.data);
                 neighbour.setChannel(dataconnection);
-                this.onLinkEstablished(neighbour);
+                this.emit(this.ON_LINK_ESTABLISHED, neighbour);
             }
         };
 

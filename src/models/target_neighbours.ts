@@ -17,16 +17,16 @@ module Model{
             super();
         }
 
-        onNeedEstablishLink(callback: (neighbour: NeighbourIf)=>void){
+        onNeedEstablishLink(callback: (neighbour: NeighbourTemplate)=>void){
             this.on(this._ON_NEED_ESTABLISH_P2P, callback);
         }
 
-        onNeedCloseLink(callback: (neighbour: NeighbourIf)=>void){
+        onNeedCloseLink(callback: (neighbour: NeighbourTemplate)=>void){
             this.on(this._ON_NEED_CLOSE_P2P, callback);
         }
 
-        addNeighbour(neighbour: NeighbourIf){
-            var lastOne = _.find(this._neighbours, (item: NeighbourIf)=>{
+        addNeighbour(neighbour: NeighbourTemplate){
+            var lastOne = _.find(this._neighbours, (item: NeighbourTemplate)=>{
                 return item.peerID() === neighbour.peerID() && item.type() === neighbour.type();
             });
 
@@ -40,17 +40,17 @@ module Model{
         }
 
         removeNeighbour(neighbourName: string){
-            var removeNeighbours = _.remove(this._neighbours, (n: NeighbourIf)=>{
+            var removeNeighbours = _.remove(this._neighbours, (n: NeighbourTemplate)=>{
                 return n.peerID() === neighbourName;
             });
 
-            _.each(removeNeighbours, (neighbour: NeighbourIf)=>{
+            _.each(removeNeighbours, (neighbour: NeighbourTemplate)=>{
                 if(neighbour.connected()) this.emit(this._ON_NEED_CLOSE_P2P, neighbour);
             });
         }
 
         targetNeighbours = ()=>{
-            var neighbours = _.filter(this._neighbours, (neighbour: NeighbourIf)=>{
+            var neighbours = _.filter(this._neighbours, (neighbour: NeighbourTemplate)=>{
                 return !neighbour.connected();
             });
 

@@ -12,47 +12,41 @@
 
 module Model{
     import MediaConnection = PeerJs.MediaConnection;
-
-    export type NeighboursArray = Array<NeighbourIf>;
+    export type NeighboursArray = Array<NeighbourTemplate>;
     export type NeighboursSource = ()=>NeighboursArray;
-    export type DataCallback = (peerId: string, message: string)=>void;
-    export type MediaCallback = (peerId: string, stream: MediaStream)=>void;
+    export type DataCallback = (message: string)=>void;
+    export type MediaCallback = (stream: MediaStream)=>void;
+
+    export var OnNeighbourDown = "onNeighbourDown-in-neighbour.ts";
+    export var OnStream = "onStream-in-neighbour.ts";
+    export var OnData = "onData-in-neighbour.ts";
 
     export enum NeighbourTypeEnum{
         video = 1,
         data = 2
     }
 
-    export interface NeighbourIf{
-        type(): NeighbourTypeEnum;
-        peerID(): string;
-        connected(): boolean;
-        sources(): Array<MediaStream>;
-        setChannel(dataChannel: PeerJs.DataConnection | PeerJs.MediaConnection);
-        setSource(source: MediaStream | Array<MediaStream>);
-        send(message: string);
-        close(): void;
+    export class NeighbourTemplate extends EventEmitter2{
+        protected _connected = false;
 
-        onStream: (callback: MediaCallback)=>void;
-        onData: (callback: DataCallback)=>void;
-    }
-
-    export class DataNeighbour extends EventEmitter2 implements NeighbourIf{
-        private _dataChannel: PeerJs.DataConnection = null;
-        private _connected = false;
-        private _callbacks: DataCallback[] = [];
-
-        constructor(private _peerID: string) {
+        constructor(protected _peerID: string) {
             super();
         }
 
+        connected(){ return this._connected; }
+        type(): NeighbourTypeEnum{ return null; }
         peerID(){ return this._peerID; }
+        sources(): Array<MediaStream>{ return [] };
+        setChannel(dataChannel: PeerJs.DataConnection | PeerJs.MediaConnection){}
+        setSource(source: MediaStream | Array<MediaStream>){}
+        send(message: string){}
+        close(){}
+    }
+
+    export class DataNeighbour extends NeighbourTemplate{
+        private _dataChannel: PeerJs.DataConnection = null;
 
         type(){ return NeighbourTypeEnum.data; }
-
-        connected(){ return this._connected; }
-
-        sources(){ return []; }
 
         setChannel(dataChannel: PeerJs.DataConnection){
             if(!dataChannel) return;
@@ -67,6 +61,7 @@ module Model{
             dataChannel.on('close', ()=>{
                 this._dataChannel = null;
                 this._connected = false;
+                this.emit(OnNeighbourDown);
             });
 
             dataChannel.on('error', (error)=>{
@@ -75,13 +70,9 @@ module Model{
             });
 
             dataChannel.on('data', (data: string)=>{
-                _.each(this._callbacks, (callback: DataCallback)=>{
-                    callback(this._peerID, data);
-                });
+                this.emit(OnData, data);
             });
         }
-
-        setSource(source: MediaStream | Array<MediaStream>){}
 
         send(message: string){
             if(!this._connected || !this._dataChannel) return;
@@ -94,29 +85,13 @@ module Model{
             this._dataChannel = null;
             this._connected = false;
         }
-
-        onStream = (callback: MediaCallback)=>{};
-
-        onData = (callback: DataCallback)=>{
-            this._callbacks.push(callback);
-        };
     }
 
-    export class VideoNeighbour extends EventEmitter2 implements NeighbourIf{
+    export class VideoNeighbour extends NeighbourTemplate{
         private _mediaConnection: PeerJs.MediaConnection = null;
-        private _connected = false;
         private _sources: Array<MediaStream> = [];
-        private _callbacks: Array<MediaCallback> = [];
-
-        constructor(private _peerID: string) {
-            super();
-        }
-
-        peerID(){ return this._peerID; }
 
         type(){ return NeighbourTypeEnum.video; }
-
-        connected(){ return this._connected; }
 
         sources(){ return this._sources; }
 
@@ -127,14 +102,13 @@ module Model{
             call.on('stream', (stream)=>{
                 this._mediaConnection = stream;
                 this._connected = true;
-                _.each(this._callbacks, (callback: MediaCallback)=>{
-                    callback(this._peerID, stream);
-                });
+                this.emit(OnStream, stream);
             });
 
             call.on('close', ()=>{
                 this._mediaConnection = null;
                 this._connected = false;
+                this.emit(OnNeighbourDown);
             });
 
             call.on('error', (error)=>{
@@ -148,23 +122,15 @@ module Model{
             else this._sources.push(<MediaStream>source);
         }
 
-        send(message: string){}
-
         close(){
             this._mediaConnection.close();
             this._mediaConnection = null;
             this._connected = false;
         }
-
-        onStream = (callback: MediaCallback)=>{
-            this._callbacks.push(callback);
-        };
-
-        onData = (callback: DataCallback)=>{};
     }
 
     export class NeighbourFactory {
-        static createNeighbour(peerID: string, type: NeighbourTypeEnum): NeighbourIf{
+        static createNeighbour(peerID: string, type: NeighbourTypeEnum): NeighbourTemplate{
             switch (type){
                 case NeighbourTypeEnum.video:
                     return new VideoNeighbour(peerID);

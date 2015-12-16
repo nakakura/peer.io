@@ -46,11 +46,20 @@
             return null;
         }
 
+        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+        function getMedia(callback){
+            navigator.getUserMedia({
+                audio: true,
+                video: true
+            }, function (stream) {
+                callback(stream);
+            }, function (err) {
+                console.log(err);
+            });
+        }
+
         window.onload = function(){
-            function startPeerIo(streams){
-                var newStream = new webkitMediaStream();
-                newStream.addTrack(streams[0].getVideoTracks()[0]);
-                newStream.addTrack(streams[1].getVideoTracks()[0]);
+            function startPeerIo(stream){
                 var query = getQueryString();
 
                 var peer = new Peer(query['id'], {
@@ -64,49 +73,42 @@
                     debug: 0});
 
                 var peerIo = new PeerIo.PeerIo(peer);
-                peerIo.addDefaultStream(newStream);
+                peerIo.addDefaultStream(stream); // for answer
 
-                var counter = 0;
-                peerIo.onStream = function(peerId, stream){
-                    var tracks = stream.getVideoTracks();
-                    if(tracks.length > 1){
-                        $("#leftVideo").get(0).src = window.URL.createObjectURL(stream);
-                        var nn = new webkitMediaStream();
-                        nn.addTrack(tracks[1]);
-                        $("#rightVideo").get(0).src = window.URL.createObjectURL(stream);
-                    }
-                    else $("#leftVideo").get(0).src = window.URL.createObjectURL(nn);
-                    counter ++;
-                };
+                peerIo.on(PeerIo.OnVideoLinkUp, function(peerId){
+                    console.log("establish video link with " + peerId)
+                });
 
-                peerIo.addNeighbour(query['target'], Model.NeighbourTypeEnum.video, newStream);
+                peerIo.on(PeerIo.OnVideoLinkDown, function(peerId){
+                    console.log("close video link with " + peerId)
+                });
+
+                peerIo.on(PeerIo.OnRecvVideo, function(peerId, stream){
+                    console.log("received video from " + peerId);
+                    $("#leftVideo").get(0).src = window.URL.createObjectURL(stream);
+                });
+
+                peerIo.on(PeerIo.OnDataLinkUp, function(peerId){
+                    console.log("establish data link with " + peerId)
+                });
+
+                peerIo.on(PeerIo.OnDataLinkDown, function(peerId){
+                    console.log("close data link with " + peerId)
+                });
+
+                peerIo.on(PeerIo.OnRecvData, function(peerId, message){
+                    console.log("received data from " + peerId);
+                    console.log(message);
+                });
+
+                peerIo.addNeighbour(query['target'], Model.NeighbourTypeEnum.data);
+                peerIo.addNeighbour(query['target'], Model.NeighbourTypeEnum.video, stream);
             }
 
-            navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-            navigator.getUserMedia({
-                audio: true,
-                video: true
-            }, function (stream) {
-                navigator.getUserMedia({
-                    audio: true,
-                    video: true
-                }, function (stream2) {
-                    var array=[];
-                    array.push(stream);
-                    array.push(stream2);
-                    startPeerIo(array);
-                }, function () {
-                }, function (err) {
-                });
-            }, function () {
-            }, function (err) {
+            getMedia(function(stream){
+                startPeerIo(stream);
             });
-
-
-            console.log(Offline.state);
-            Offline.check();
         };
-
     </script>
 </head>
 <body>

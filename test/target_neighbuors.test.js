@@ -1,5 +1,5 @@
 
-describe("Target NeighbourIf", function() {
+describe("Target NeighbourTemplate", function() {
     beforeEach(function(done) {
         done();
     });
