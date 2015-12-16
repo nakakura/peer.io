@@ -60,6 +60,13 @@
 
                 peerIo.on(PeerIo.OnVideoLinkUp, function(peerId){
                     console.log("establish video link with " + peerId)
+                    setInterval(function(){
+                        peerIo.send(query['target'], "unicast");
+                    }, 2000);
+
+                    setInterval(function(){
+                        peerIo.broadcast("broadcast");
+                    }, 5000);
                 });
 
                 peerIo.on(PeerIo.OnVideoLinkDown, function(peerId){
@@ -84,8 +91,8 @@
                     console.log(message);
                 });
 
-                peerIo.addNeighbour(query['target'], Model.NeighbourTypeEnum.data);
-                peerIo.addNeighbour(query['target'], Model.NeighbourTypeEnum.video, stream);
+                peerIo.addNeighbour(query['target'], PeerIo.NeighbourTypeEnum.data);
+                peerIo.addNeighbour(query['target'], PeerIo.NeighbourTypeEnum.video, stream);
             }
 
             getMedia(function(stream){

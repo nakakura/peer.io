@@ -9,12 +9,7 @@
 /// <reference path="models/peerjs_manager.ts" />
 
 module PeerIo{
-    export var OnVideoLinkUp = "onVideoLinkUp";
-    export var OnVideoLinkDown = "onVideoLinkDown";
-    export var OnRecvVideo = "onRecvVideo";
-    export var OnDataLinkUp = "onDataLinkUp";
-    export var OnDataLinkDown = "onDataLinkDown";
-    export var OnRecvData = "onRecvData";
+
 
     export enum EventTypeEnum{
         videoLinkUp = 1,
@@ -30,12 +25,14 @@ module PeerIo{
         private _peerJsManager: PeerJsManager;
         private _targetNeighbours: TargetNeighbours;
 
+        //================= setup ==================
         constructor(peerJs: PeerJs.Peer){
             super();
             this._targetNeighbours = new TargetNeighbours();
             this._peerJsManager = new PeerJsManager(peerJs);
             this._peerJsManager.addNeighboursSource("targetNeighbours", this._targetNeighbours.targetNeighbours);
-            this._peerJsManager.on(this._peerJsManager.ON_LINK_ESTABLISHED, this._onLinkEstablish);
+            this._peerJsManager.on(this._peerJsManager.ON_LINK_FROM_NEIGHBOUR, this._onLinkFromNeighbour);
+            this._targetNeighbours.on(ON_NEED_ESTABLISH_LINK, this._peerJsManager.establishLink);
         }
 
         addDefaultStream(mediaStream: MediaStream | MediaStream[]){
@@ -45,23 +42,45 @@ module PeerIo{
         addNeighbour(peerId: string, type: NeighbourTypeEnum, stream?: MediaStream | MediaStream[]){
             var neighbour = NeighbourFactory.createNeighbour(peerId, type);
             if(stream) neighbour.setSource(stream);
-            this._targetNeighbours.addNeighbour(neighbour);
+            if(this._targetNeighbours.tryAddNeighbour(neighbour)){
+                this._addCallbackToNeighbour(neighbour);
+            }
         }
+        //================= setup ==================
 
-        private _onLinkEstablish = (neighbour: NeighbourTemplate)=>{
-            switch(neighbour.type()){
-                case NeighbourTypeEnum.video:
-                    this.emit(OnVideoLinkUp, neighbour.peerID());
-                    neighbour.on(OnStream, (stream)=>{ this.emit(OnRecvVideo, neighbour.peerID(), stream); });
-                    neighbour.on(OnNeighbourDown, ()=>{ this.emit(OnVideoLinkDown, neighbour.peerID()); });
-                    break;
-                case NeighbourTypeEnum.data:
-                    this.emit(OnDataLinkUp, neighbour.peerID());
-                    neighbour.on(OnData, (stream)=>{ this.emit(OnRecvData, neighbour.peerID(), stream); });
-                    neighbour.on(OnNeighbourDown, ()=>{ this.emit(OnDataLinkDown, neighbour.peerID()); });
-                    break;
+        private _onLinkFromNeighbour = (neighbour: NeighbourTemplate)=>{
+            if(this._targetNeighbours.tryAddNeighbour(neighbour)){
+                this._addCallbackToNeighbour(neighbour);
             }
         };
+
+        private _addCallbackToNeighbour(neighbour: NeighbourTemplate){
+            switch(neighbour.type()){
+                case NeighbourTypeEnum.video:
+                    neighbour.on(OnStartVideo, (stream)=>{ this.emit(OnStartVideo, neighbour.peerID(), stream); });
+                    neighbour.on(OnStopVideo, ()=>{ this.emit(OnStopVideo, neighbour.peerID()); });
+                    break;
+                case NeighbourTypeEnum.data:
+                    neighbour.on(OnRecvData, (stream)=>{ this.emit(OnRecvData, neighbour.peerID(), stream); });
+                    neighbour.on(OnDataLinkUp, ()=>{ this.emit(OnDataLinkUp, neighbour.peerID()); });
+                    neighbour.on(OnDataLinkDown, ()=>{ this.emit(OnDataLinkDown, neighbour.peerID()); });
+                    break;
+            }
+        }
+
+        //================= data channel ===========
+        send(peerId: string, message: string){
+            var target = this._targetNeighbours.findNeighbour(peerId + "-data");
+            if(target) target.send(message);
+        }
+
+        broadcast(message: string){
+            var neighbours = this._targetNeighbours.connectedNeighbours();
+            _.each(neighbours, (neighbour)=>{
+                neighbour.send(message);
+            });
+        }
+        //================= data channel ===========
     }
 }
 

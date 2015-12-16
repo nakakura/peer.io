@@ -8,50 +8,46 @@
 /// <reference path="./neighbour.ts" />
 
 module PeerIo{
+    export var ON_NEED_ESTABLISH_LINK = "onNeedEstablishLink-in-targetneighbours.ts";
+    export var ON_NEED_CLOSE_LINK = "onNeedCloseLink-in-targetneighbours.ts";
+
     export class TargetNeighbours extends EventEmitter2{
-        private _neighbours: NeighboursArray = [];
-        private _ON_NEED_ESTABLISH_P2P = "onNeedEstablishP2P";
-        private _ON_NEED_CLOSE_P2P = "onNeedCloseP2P";
+        private _neighbours: NeighboursHash = {};
 
         constructor(){
             super();
         }
 
-        onNeedEstablishLink(callback: (neighbour: NeighbourTemplate)=>void){
-            this.on(this._ON_NEED_ESTABLISH_P2P, callback);
-        }
-
-        onNeedCloseLink(callback: (neighbour: NeighbourTemplate)=>void){
-            this.on(this._ON_NEED_CLOSE_P2P, callback);
-        }
-
-        addNeighbour(neighbour: NeighbourTemplate){
-            var lastOne = _.find(this._neighbours, (item: NeighbourTemplate)=>{
-                return item.peerID() === neighbour.peerID() && item.type() === neighbour.type();
-            });
-
-            if(lastOne) {
-                this.emit(this._ON_NEED_CLOSE_P2P, neighbour);
-                return;
+        tryAddNeighbour(neighbour: NeighbourTemplate): boolean{
+            this.removeNeighbour(neighbour.key());
+            this._neighbours[neighbour.key()] = neighbour;
+            if(!neighbour.active()) {
+                this.emit(ON_NEED_ESTABLISH_LINK, neighbour);
             }
-
-            this._neighbours.push(neighbour);
-            if(!neighbour.connected()) this.emit(this._ON_NEED_ESTABLISH_P2P, neighbour);
+            return true;
         }
 
         removeNeighbour(neighbourName: string){
-            var removeNeighbours = _.remove(this._neighbours, (n: NeighbourTemplate)=>{
-                return n.peerID() === neighbourName;
-            });
-
-            _.each(removeNeighbours, (neighbour: NeighbourTemplate)=>{
-                if(neighbour.connected()) this.emit(this._ON_NEED_CLOSE_P2P, neighbour);
-            });
+            if(!(neighbourName in this._neighbours)) return;
+            this._neighbours[neighbourName].close();
+            delete this._neighbours[neighbourName];
         }
 
-        targetNeighbours = ()=>{
-            var neighbours = _.filter(this._neighbours, (neighbour: NeighbourTemplate)=>{
-                return !neighbour.connected();
+        targetNeighbours: ()=>NeighboursArray = ()=>{
+            var neighbours = _.filter(this._neighbours, (neighbour: NeighbourTemplate, key: string)=>{
+                return !neighbour.active();
+            });
+
+            return neighbours;
+        };
+
+        findNeighbour = (key: string)=>{
+            return this._neighbours[key];
+        };
+
+        connectedNeighbours: ()=>NeighboursArray = ()=>{
+            var neighbours = _.filter(this._neighbours, (neighbour: NeighbourTemplate, key: string)=>{
+                return neighbour.connected();
             });
 
             return neighbours;

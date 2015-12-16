@@ -15,7 +15,7 @@ module PeerIo{
     type NeighbourSourceContainer = {[key: string]: NeighboursSource};
 
     export class PeerJsManager extends EventEmitter2{
-        public ON_LINK_ESTABLISHED = "onLinkEstablished";
+        public ON_LINK_FROM_NEIGHBOUR = "onLinkFromNeighbour-in-peerjs_manager.ts";
         private _state: PeerJsStateManager;
         private _neighbourSources: NeighbourSourceContainer = {};
         private _defaultStream: MediaStream[] = [];
@@ -34,12 +34,10 @@ module PeerIo{
             (<any>Offline).options = { checks: { xhr: { url: 'https://skyway.io/dist/0.3/peer.min.js' } } };
 
             Offline.on('up', ()=>{
-                console.log("offline up");
                 this._state.stateObject().network(this._state, true);
             });
 
             Offline.on('down', ()=>{
-                console.log("offline down");
                 this._state.stateObject().network(this._state, false);
             });
 
@@ -60,26 +58,14 @@ module PeerIo{
         }
 
         addNeighboursSource(sourceId: string, source: NeighboursSource){
-            if(this._neighbourSources.hasOwnProperty(sourceId)) return;
+            if(sourceId in this._neighbourSources) return;
             this._neighbourSources[sourceId] = source;
         }
 
         removeNeighboursSource(sourceId: string){
-            if(!this._neighbourSources.hasOwnProperty(sourceId)) return;
+            if(!(sourceId in this._neighbourSources)) return;
             delete this._neighbourSources[sourceId];
         }
-
-        establishLink = (neighbour: NeighbourTemplate)=>{
-            console.log("establishlink");
-            switch(neighbour.type()){
-                case NeighbourTypeEnum.video:
-                    this._tryCall(<VideoNeighbour>neighbour);
-                    break;
-                case NeighbourTypeEnum.data:
-                    this._tryConnect(<DataNeighbour>neighbour);
-                    break;
-            }
-        };
 
         //=============peer event and change state start=========
 
@@ -113,7 +99,7 @@ module PeerIo{
                     }
                     break;
                 case PeerJsStateEnum.connected:
-                    setTimeout(this._establishAllPeer, Util.waitTime(0, 2000));
+                    setTimeout(this._establishAllPeer, Util.waitTime(2000, 5000));
                     break;
                 case PeerJsStateEnum.wait_closing:
                     break;
@@ -129,16 +115,24 @@ module PeerIo{
             _.each(this._targetNeighbours(), this.establishLink);
         };
 
+        establishLink = (neighbour: NeighbourTemplate)=>{
+            switch(neighbour.type()){
+                case NeighbourTypeEnum.video:
+                    this._tryCall(<VideoNeighbour>neighbour);
+                    break;
+                case NeighbourTypeEnum.data:
+                    this._tryConnect(<DataNeighbour>neighbour);
+                    break;
+            }
+        };
+
         private _tryCall(neighbour: VideoNeighbour){
-            console.log("trycall");
             var sources = neighbour.sources();
             var mediaConnection = this._peer.call(neighbour.peerID(), sources[0]);
             neighbour.setChannel(mediaConnection);
-            this.emit(this.ON_LINK_ESTABLISHED, neighbour);
         }
 
         private _onRecvCall = (mediaConnection: PeerJs.MediaConnection)=> {
-            console.log("onrecvcall");
             var neighbourID = mediaConnection.peer;
             mediaConnection.answer(this._defaultStream[0]);
 
@@ -149,7 +143,7 @@ module PeerIo{
             } else{
                 var neighbour = NeighbourFactory.createNeighbour(neighbourID, NeighbourTypeEnum.video);
                 neighbour.setChannel(mediaConnection);
-                this.emit(this.ON_LINK_ESTABLISHED, neighbour);
+                this.emit(this.ON_LINK_FROM_NEIGHBOUR, neighbour);
             }
         };
 
@@ -160,13 +154,10 @@ module PeerIo{
                 reliable: false
             });
 
-            console.log("tryconnect");
             neighbour.setChannel(dataChannel);
-            this.emit(this.ON_LINK_ESTABLISHED, neighbour);
         }
 
         private _onRecvConnect = (dataconnection: PeerJs.DataConnection)=> {
-            console.log("onrecvconnect");
             var neighbourID = dataconnection.peer;
             var targets = this._targetNeighbours();
 
@@ -175,14 +166,14 @@ module PeerIo{
             } else{
                 var neighbour = NeighbourFactory.createNeighbour(neighbourID, NeighbourTypeEnum.data);
                 neighbour.setChannel(dataconnection);
-                this.emit(this.ON_LINK_ESTABLISHED, neighbour);
+                this.emit(this.ON_LINK_FROM_NEIGHBOUR, neighbour);
             }
         };
 
         //=============establishing p2p link end=================
         //=============util start================================
 
-        private _targetNeighbours(): NeighboursArray{
+        private _targetNeighbours(): NeighboursHash{
             return _.reduce(this._neighbourSources, (container: NeighboursArray, val: NeighboursSource, key: string)=>{
                 return $.extend(container, val());
             }, []);

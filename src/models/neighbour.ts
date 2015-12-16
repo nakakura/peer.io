@@ -12,14 +12,15 @@
 
 module PeerIo{
     import MediaConnection = PeerJs.MediaConnection;
+    export type NeighboursHash = {[key: string]: NeighbourTemplate};
     export type NeighboursArray = Array<NeighbourTemplate>;
     export type NeighboursSource = ()=>NeighboursArray;
-    export type DataCallback = (message: string)=>void;
-    export type MediaCallback = (stream: MediaStream)=>void;
 
-    export var OnNeighbourDown = "onNeighbourDown-in-neighbour.ts";
-    export var OnStream = "onStream-in-neighbour.ts";
-    export var OnData = "onData-in-neighbour.ts";
+    export var OnStartVideo = "onStartVideo-in-peer.io.ts";
+    export var OnStopVideo = "onStopVideo-in-peer.io.ts";
+    export var OnDataLinkUp = "onDataLinkUp";
+    export var OnDataLinkDown = "onDataLinkDown";
+    export var OnRecvData = "onRecvData";
 
     export enum NeighbourTypeEnum{
         video = 1,
@@ -27,13 +28,13 @@ module PeerIo{
     }
 
     export class NeighbourTemplate extends EventEmitter2{
-        protected _connected = false;
-
         constructor(protected _peerID: string) {
             super();
         }
 
-        connected(){ return this._connected; }
+        key(): string{ return "this must not called"; };
+        active(){ return false; }
+        connected(){ return false; }
         type(): NeighbourTypeEnum{ return null; }
         peerID(){ return this._peerID; }
         sources(): Array<MediaStream>{ return [] };
@@ -45,75 +46,109 @@ module PeerIo{
 
     export class DataNeighbour extends NeighbourTemplate{
         private _dataChannel: PeerJs.DataConnection = null;
+        private _connecting = false;
+        private _startTime = -1;
 
         type(){ return NeighbourTypeEnum.data; }
 
+        key(){
+            return this._peerID + "-data";
+        }
+
+        active(){ //接続済み or 接続開始してから1秒たってない
+            var currentTime = new Date().getTime();
+            return this.connected() || (this._connecting && currentTime - this._startTime < 1000);
+        }
+
+        connected(): boolean{
+            if(!this._dataChannel) return false;
+            if(!this._dataChannel.open) return false;
+            return this._dataChannel.open;
+        }
+
         setChannel(dataChannel: PeerJs.DataConnection){
-            if(!dataChannel) return;
+            this._startTime = new Date().getTime();
 
             this._dataChannel = dataChannel;
-            this._connected = false;
+            this._connecting = true;
 
             dataChannel.on('open', ()=>{
-                this._connected = true;
+                this._connecting = false;
+                this.emit(OnDataLinkUp);
             });
 
             dataChannel.on('close', ()=>{
+                this._connecting = false;
                 this._dataChannel = null;
-                this._connected = false;
-                this.emit(OnNeighbourDown);
+                this.emit(OnDataLinkDown);
             });
 
             dataChannel.on('error', (error)=>{
+                this._connecting = false;
                 this._dataChannel = null;
-                this._connected = false;
             });
 
             dataChannel.on('data', (data: string)=>{
-                this.emit(OnData, data);
+                this.emit(OnRecvData, data);
             });
         }
 
         send(message: string){
-            if(!this._connected || !this._dataChannel) return;
+            if(!this.connected() || !this._dataChannel) return;
 
             this._dataChannel.send(message);
         }
 
         close(){
-            this._dataChannel.close();
+            this._connecting = false;
             this._dataChannel = null;
-            this._connected = false;
         }
     }
 
     export class VideoNeighbour extends NeighbourTemplate{
         private _mediaConnection: PeerJs.MediaConnection = null;
         private _sources: Array<MediaStream> = [];
+        private _connecting = false;
+        private _startTime = -1;
 
         type(){ return NeighbourTypeEnum.video; }
+
+        key(){
+            return this._peerID + "-video";
+        }
+
+        active(){ //接続済み or 接続開始してから1秒たってない
+            var currentTime = new Date().getTime();
+            return this.connected() || (this._connecting && currentTime - this._startTime < 2000);
+        }
+
+        connected(): boolean{
+            if(!this._mediaConnection) return false;
+            if(!this._mediaConnection.open) return false;
+            return this._mediaConnection.open;
+        }
 
         sources(){ return this._sources; }
 
         setChannel(call: PeerJs.MediaConnection){
+            this._connecting = true;
+            this._startTime = new Date().getTime();
             this._mediaConnection = call;
-            this._connected = false;
 
             call.on('stream', (stream)=>{
-                this._mediaConnection = stream;
-                this._connected = true;
-                this.emit(OnStream, stream);
+                this._connecting = false;
+                this.emit(OnStartVideo, stream);
             });
 
             call.on('close', ()=>{
+                this._connecting = false;
                 this._mediaConnection = null;
-                this._connected = false;
-                this.emit(OnNeighbourDown);
+                this.emit(OnStopVideo);
             });
 
             call.on('error', (error)=>{
+                this._connecting = false;
                 this._mediaConnection = null;
-                this._connected = false;
             });
         }
 
@@ -123,9 +158,9 @@ module PeerIo{
         }
 
         close(){
-            this._mediaConnection.close();
+            if(this._mediaConnection) this._mediaConnection.close();
+            this._connecting = false;
             this._mediaConnection = null;
-            this._connected = false;
         }
     }
 

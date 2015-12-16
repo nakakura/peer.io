@@ -1,5 +1,38 @@
 #peer.io
 
+### What's this?
+Wrapper library of SkyWay and PeerJs
+
+### Why is it needed?
+SkyWay and PeerJs don't re-establish P2P links.  
+They don't emit disconnect-event until their reconnecting process completely failed.  
+Third party library cannot detect and start reconnecting process.
+peer.io wraps them and re-establish P2P links.
+
+### How to use it?
+
+$bower install peer.io
+
+**code**
+	
+	var peerIo = new PeerIo.PeerIo(peer); //wrap peer js object
+	peerIo.addDefaultStream(mediaStream); //set stream
+	peerIo.addNeighbour(相手のpeerID, Model.NeighbourTypeEnum.data); //register neighbour to establish data lilnk
+    peerIo.addNeighbour(相手のpeerID, Model.NeighbourTypeEnum.video, mediaStream); //register neighbour to establish video link
+
+And you can get events about P2P links.
+
+	peerIo.on(PeerIo.OnStartVideo, function(peerId, stream){
+	    console.log("received video from " + peerId);
+	    $("#video").get(0).src = window.URL.createObjectURL(stream);
+	}); //get video stream
+	
+	peerIo.OnRecvData, function(peerId, message){
+	    console.log("received data from " + peerId);
+	    console.log(message);
+	}); //get data from neighbour
+	
+	
 ### これはなに？
 SkyWayやPeer.jsのラッパー
 
@@ -28,10 +61,10 @@ $bower install peer.io
 
 これだけ。相手からのMediaやDataを受け取るのためにイベントを書いておくのを忘れずに。
 
-	peerIo.on(PeerIo.OnRecvVideo, function(peerId, stream){
+	peerIo.on(PeerIo.OnStartVideo, function(peerId, stream){
 	    console.log("received video from " + peerId);
-	    $("#leftVideo").get(0).src = window.URL.createObjectURL(stream);
-	}); //相手から来たMediaを取得するイベント
+	    $("#video").get(0).src = window.URL.createObjectURL(stream);
+	}); //相手から来たVideoを取得するイベント
 	
 	peerIo.OnRecvData, function(peerId, message){
 	    console.log("received data from " + peerId);

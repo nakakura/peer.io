@@ -75,21 +75,24 @@
                 var peerIo = new PeerIo.PeerIo(peer);
                 peerIo.addDefaultStream(stream); // for answer
 
-                peerIo.on(PeerIo.OnVideoLinkUp, function(peerId){
-                    console.log("establish video link with " + peerId)
-                });
-
-                peerIo.on(PeerIo.OnVideoLinkDown, function(peerId){
-                    console.log("close video link with " + peerId)
-                });
-
-                peerIo.on(PeerIo.OnRecvVideo, function(peerId, stream){
+                peerIo.on(PeerIo.OnStartVideo, function(peerId, stream){
                     console.log("received video from " + peerId);
                     $("#leftVideo").get(0).src = window.URL.createObjectURL(stream);
                 });
 
+                peerIo.on(PeerIo.OnStopVideo, function(peerId){
+                    console.log("close video link with " + peerId)
+                });
+
                 peerIo.on(PeerIo.OnDataLinkUp, function(peerId){
                     console.log("establish data link with " + peerId)
+                    setInterval(function(){
+                        peerIo.send(query['target'], "unicast");
+                    }, 2000);
+
+                    setInterval(function(){
+                        peerIo.broadcast("broadcast");
+                    }, 4000);
                 });
 
                 peerIo.on(PeerIo.OnDataLinkDown, function(peerId){
@@ -101,8 +104,8 @@
                     console.log(message);
                 });
 
-                peerIo.addNeighbour(query['target'], Model.NeighbourTypeEnum.data);
-                peerIo.addNeighbour(query['target'], Model.NeighbourTypeEnum.video, stream);
+                peerIo.addNeighbour(query['target'], PeerIo.NeighbourTypeEnum.data);
+                peerIo.addNeighbour(query['target'], PeerIo.NeighbourTypeEnum.video, stream);
             }
 
             getMedia(function(stream){
