@@ -58,28 +58,24 @@
                 var peerIo = new PeerIo.PeerIo(peer);
                 peerIo.addDefaultStream(stream); // for answer
 
-                peerIo.on(PeerIo.OnVideoLinkUp, function(peerId){
-                    console.log("establish video link with " + peerId)
+                peerIo.on(PeerIo.OnStartVideo, function(peerId, stream){
+                    console.log("received video from " + peerId);
+                    document.getElementsByName("leftVideo")[0].src = window.URL.createObjectURL(stream);
+                });
+
+                peerIo.on(PeerIo.OnStopVideo, function(peerId){
+                    console.log("close video link with " + peerId)
+                });
+
+                peerIo.on(PeerIo.OnDataLinkUp, function(peerId){
+                    console.log("establish data link with " + peerId);
                     setInterval(function(){
                         peerIo.send(query['target'], "unicast");
                     }, 2000);
 
                     setInterval(function(){
                         peerIo.broadcast("broadcast");
-                    }, 5000);
-                });
-
-                peerIo.on(PeerIo.OnVideoLinkDown, function(peerId){
-                    console.log("close video link with " + peerId)
-                });
-
-                peerIo.on(PeerIo.OnRecvVideo, function(peerId, stream){
-                    console.log("received video from " + peerId);
-                    $("#leftVideo").get(0).src = window.URL.createObjectURL(stream);
-                });
-
-                peerIo.on(PeerIo.OnDataLinkUp, function(peerId){
-                    console.log("establish data link with " + peerId)
+                    }, 4000);
                 });
 
                 peerIo.on(PeerIo.OnDataLinkDown, function(peerId){

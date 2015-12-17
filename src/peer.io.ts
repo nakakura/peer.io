@@ -9,8 +9,6 @@
 /// <reference path="models/peerjs_manager.ts" />
 
 module PeerIo{
-
-
     export enum EventTypeEnum{
         videoLinkUp = 1,
         recvVideo = 2,

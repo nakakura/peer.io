@@ -8,11 +8,10 @@
     <title>peer.io</title>
 
     <!-- build:dependeny dependencies.js -->
-    <script src="./bower_components/jquery/dist/jquery.js"></script>
+    <script src="./bower_components/peerjs/peer.js"></script>
     <script src="./bower_components/offline/offline.js"></script>
     <script src="./bower_components/lodash/lodash.js"></script>
     <script src="./bower_components/eventemitter2/lib/eventemitter2.js"></script>
-    <script src="./bower_components/peerjs/peer.js"></script>
     <!-- endbuild -->
     <!-- build:js peer.io.js -->
     <script src="./models/states/offline_state.js"></script>
@@ -77,7 +76,7 @@
 
                 peerIo.on(PeerIo.OnStartVideo, function(peerId, stream){
                     console.log("received video from " + peerId);
-                    $("#leftVideo").get(0).src = window.URL.createObjectURL(stream);
+                    document.getElementsByName("leftVideo")[0].src = window.URL.createObjectURL(stream);
                 });
 
                 peerIo.on(PeerIo.OnStopVideo, function(peerId){
@@ -85,7 +84,7 @@
                 });
 
                 peerIo.on(PeerIo.OnDataLinkUp, function(peerId){
-                    console.log("establish data link with " + peerId)
+                    console.log("establish data link with " + peerId);
                     setInterval(function(){
                         peerIo.send(query['target'], "unicast");
                     }, 2000);

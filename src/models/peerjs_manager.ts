@@ -175,7 +175,7 @@ module PeerIo{
 
         private _targetNeighbours(): NeighboursHash{
             return _.reduce(this._neighbourSources, (container: NeighboursArray, val: NeighboursSource, key: string)=>{
-                return $.extend(container, val());
+                return Array.prototype.push.apply(container, val());
             }, []);
         }
     }
