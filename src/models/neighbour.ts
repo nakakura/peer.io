@@ -57,7 +57,7 @@ module PeerIo{
 
         active(){ //接続済み or 接続開始してから1秒たってない
             var currentTime = new Date().getTime();
-            return this.connected() || (this._connecting && currentTime - this._startTime < 1000);
+            return this.connected() || (this._connecting && currentTime - this._startTime < 2000);
         }
 
         connected(): boolean{
@@ -67,6 +67,7 @@ module PeerIo{
         }
 
         setChannel(dataChannel: PeerJs.DataConnection){
+            if(!dataChannel) return;
             this._startTime = new Date().getTime();
 
             this._dataChannel = dataChannel;
@@ -131,6 +132,7 @@ module PeerIo{
         sources(){ return this._sources; }
 
         setChannel(call: PeerJs.MediaConnection){
+            if(!call) return;
             this._connecting = true;
             this._startTime = new Date().getTime();
             this._mediaConnection = call;
