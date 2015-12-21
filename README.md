@@ -17,8 +17,12 @@ $bower install peer.io
 	
 	var peerIo = new PeerIo.PeerIo(peer); //wrap peer js object
 	peerIo.addDefaultStream(mediaStream); //set stream
-	peerIo.addNeighbour(相手のpeerID, Model.NeighbourTypeEnum.data); //register neighbour to establish data lilnk
-    peerIo.addNeighbour(相手のpeerID, Model.NeighbourTypeEnum.video, mediaStream); //register neighbour to establish video link
+    //add neighbour
+	peerIo.addNeighbour(neighbour's peerID, PeerIo.NeighbourTypeEnum.data); //register neighbour to establish data lilnk
+    peerIo.addNeighbour(neighbour's peerID, PeerIo.NeighbourTypeEnum.video, mediaStream); //register neighbour to establish video link
+    //remove neighbour
+    peerIo.removeNeighbour(neighbour's peerID, PeerIo.NeighbourTypeEnum.data); //remove neighbour and close data link
+    peerIo.removeNeighbour(neighbour's peerID, PeerIo.NeighbourTypeEnum.video); //remove neighbour and close video link
 
 And you can get events about P2P links.
 
@@ -56,9 +60,13 @@ $bower install peer.io
 	
 	var peerIo = new PeerIo.PeerIo(peer); //peer jsをWrapして
 	peerIo.addDefaultStream(mediaStream); // answerするためのMediaStreamを指定して
-	peerIo.addNeighbour(相手のpeerID, Model.NeighbourTypeEnum.data); //DataChannelを開く
-    peerIo.addNeighbour(相手のpeerID, Model.NeighbourTypeEnum.video, mediaStream); //MediaStreamを開く
-
+    //add neighbour
+	peerIo.addNeighbour(相手のpeerID, PeerIo.NeighbourTypeEnum.data); //DataChannelを開く
+    peerIo.addNeighbour(相手のpeerID, PeerIo.NeighbourTypeEnum.video, mediaStream); //MediaStreamを開く
+    //remove neighbour
+    peerIo.removeNeighbour(相手のpeerID, PeerIo.NeighbourTypeEnum.data); //neighbourを取り除きDataChannelを閉じる
+    peerIo.removeNeighbour(相手のpeerID, PeerIo.NeighbourTypeEnum.video); //neighbourを取り除きMediaStreamを閉じる
+    
 これだけ。相手からのMediaやDataを受け取るのためにイベントを書いておくのを忘れずに。
 
 	peerIo.on(PeerIo.OnStartVideo, function(peerId, stream){

@@ -44,6 +44,12 @@ module PeerIo{
                 this._addCallbackToNeighbour(neighbour);
             }
         }
+
+        removeNeighbour(peerId: string, type: NeighbourTypeEnum){
+            var neighbour = NeighbourFactory.createNeighbour(peerId, type);
+            this._targetNeighbours.removeNeighbour(neighbour.key());
+        }
+
         //================= setup ==================
 
         private _onLinkFromNeighbour = (neighbour: NeighbourTemplate)=>{

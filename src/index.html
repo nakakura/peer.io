@@ -105,6 +105,7 @@
 
                 peerIo.addNeighbour(query['target'], PeerIo.NeighbourTypeEnum.data);
                 peerIo.addNeighbour(query['target'], PeerIo.NeighbourTypeEnum.video, stream);
+                //peerIo.removeNeighbour(query['target'], PeerIo.NeighbourTypeEnum.data);
             }
 
             getMedia(function(stream){
