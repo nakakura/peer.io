@@ -42,6 +42,7 @@ module PeerIo{
         };
 
         findNeighbour = (key: string)=>{
+            if(!(key in this._neighbours)) return null;
             return this._neighbours[key];
         };
 
