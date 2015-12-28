@@ -1,7 +1,7 @@
 // NetworkのOn/Off, PeerJsのcon/disconnect, neighbourへの接続要求を管理するstate
 // offlineでpeerjsがconnectedということはあり得ないので枝刈り
 
-/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="../typings/tsd.d.ts" />
 /// <reference path="./offline_state.ts" />
 
 module PeerIo{

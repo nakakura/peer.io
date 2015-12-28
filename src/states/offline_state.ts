@@ -1,7 +1,7 @@
 // オフライン Peer確立なし 接続要求もなし
 // 初期状態
 
-/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="../typings/tsd.d.ts" />
 /// <reference path="./peerjs_state.ts" />
 /// <reference path="./online_state.ts" />
 
