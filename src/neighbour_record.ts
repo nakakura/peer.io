@@ -1,5 +1,12 @@
+//NeighbourRecord is just a record.
+//It shows an Neighbour which LinkGenerator should establish a link to.
+//1. This object is created when user add an Neighbour.
+//2. This object is destroyed when user remove it.
+//3. This object has some delegated method.
+
 /// <reference path="./typings/tsd.d.ts" />
 /// <reference path="./link_component.ts" />
+/// <reference path="./Util.ts" />
 
 module PeerIo{
     export enum NeighbourTypeEnum{
@@ -12,14 +19,19 @@ module PeerIo{
             super();
         }
 
-        isEstablished = ()=>{
+        //delegate
+        isEstablished: ()=>boolean = ()=>{
+            throw("this method should be overwrite.");
             return false;
         };
 
-        addLink = (link: LinkComponentTemplate)=>{};
+        //delegate
+        addLink = (link: LinkComponentTemplate)=>{
+            throw("this method should be overwrite.");
+        };
 
         key(): string{
-            return this._peerId + this._type.toString();
+            return Util.key(this._peerId, this._type);
         }
     }
 }

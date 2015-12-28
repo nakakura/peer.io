@@ -1,3 +1,8 @@
+//It is a component which wraps Link(MediaStream of DataChannel)
+//1. This object is created when Link is established.
+//2. This object is created only by LinkComponentFactory
+//3. When Link become down, this component is destroyed
+
 /// <reference path="./typings/tsd.d.ts" />
 /// <reference path="./neighbour_record.ts" />
 /// <reference path="./Util.ts" />

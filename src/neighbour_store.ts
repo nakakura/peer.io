@@ -1,3 +1,8 @@
+//NeighbourStore has records and links
+//1. This object is created when PeerIo is initialized
+//2. This object is destroyed when PeerIo destroyed
+//3. This object may be unique, I'll make it singleton.
+
 /// <reference path="./typings/tsd.d.ts" />
 /// <reference path="./neighbour_record.ts" />
 /// <reference path="./link_component.ts" />
