@@ -77,10 +77,6 @@ module PeerIo {
         constructor(protected peerID_, protected link_: PeerJs.MediaConnection){
             super(peerID_, link_);
 
-            link_.on('stream', (stream)=> {
-                this.emit(OnStartVideo, stream);
-            });
-
             link_.on('close', ()=> {
                 this.link_ = null;
                 this.emit(OnStopVideo);

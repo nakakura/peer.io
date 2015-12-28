@@ -19,7 +19,7 @@ describe("DataLinkComponent", function() {
     it ("constructor", function(done) {
         var spy_on = sinon.spy(link, 'on');
         videoLinkComp = PeerIo.LinkComponentFactory.createLinkComponent(neighbourID, link);
-        expect(spy_on.callCount).to.deep.equal(3);
+        expect(spy_on.callCount).to.deep.equal(2);
         expect(videoLinkComp.type()).to.deep.equal(PeerIo.NeighbourTypeEnum.video);
         expect(videoLinkComp.peerID()).to.deep.equal(neighbourID);
         expect(videoLinkComp.key()).to.deep.equal(neighbourID + '-video');
@@ -64,8 +64,8 @@ describe("DataLinkComponent", function() {
         videoLinkComp = PeerIo.LinkComponentFactory.createLinkComponent(neighbourID, link);
         videoLinkComp.on(PeerIo.OnStopVideo, callback);
         expect(callback.callCount).to.deep.equal(0);
-        expect(spy_on.getCall(1).args[0]).to.deep.equal('close');
-        var onClose = spy_on.getCall(1).args[1];
+        expect(spy_on.getCall(0).args[0]).to.deep.equal('close');
+        var onClose = spy_on.getCall(0).args[1];
         onClose();
         expect(callback.callCount).to.deep.equal(1);
         expect(videoLinkComp.isEstablished()).to.deep.equal(false);
