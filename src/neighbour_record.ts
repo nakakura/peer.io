@@ -1,5 +1,5 @@
 /// <reference path="./typings/tsd.d.ts" />
-/// <reference path="./neighbour_link.ts" />
+/// <reference path="./link_component.ts" />
 
 module PeerIo{
     export enum NeighbourTypeEnum{
@@ -16,7 +16,7 @@ module PeerIo{
             return false;
         };
 
-        addLink = (link: NeighbourLinkComponent)=>{};
+        addLink = (link: LinkComponentTemplate)=>{};
 
         key(): string{
             return this._peerId + this._type.toString();
