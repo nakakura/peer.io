@@ -21,9 +21,11 @@
 
 module PeerIo{
     export class LinkGenerator extends EventEmitter2{
+        OnNewMediaStream = "on-new-mediastream-in-link_generator.ts";
+        OnNewDataChannel = "on-new-datachannel-in-link_generator.ts";
         private state_: PeerJsStateManager;
-        private neighbourSourceArray_: Array<NeighbourSource> = [];
-        private defaultStreamHash_: {[key: string]: MediaStream} = {};
+        private neighbourSourceHash_: {[key: string]: NeighbourSource} = {};
+        private defaultStream_: MediaStream;
 
         constructor(private peer_: PeerJs.Peer) {
             super();
@@ -35,12 +37,16 @@ module PeerIo{
             this.wrapPeerEvent_();
         }
 
-        addDefaultStream(key: string, stream: MediaStream){
-            this.defaultStreamHash_[key] = stream;
+        setDefaultStream(stream: MediaStream){
+            this.defaultStream_ = stream;
         }
 
-        removeDefaultStream(key: string){
-            if(key in this.defaultStreamHash_) delete this.defaultStreamHash_[key];
+        addNeighbourSource(key: string, source: NeighbourSource){
+            this.neighbourSourceHash_[key] = source;
+        }
+
+        removeNeighbourSource(key: string){
+            if(key in this.neighbourSourceHash_) delete this.neighbourSourceHash_[key];
         }
 
         //=============Network and PeerJs state methods start=========
@@ -49,6 +55,7 @@ module PeerIo{
             (<any>Offline).options = { checks: { xhr: { url: 'https://skyway.io/dist/0.3/peer.min.js' } } };
 
             Offline.on('up', ()=>{
+                console.log("offline up");
                 this.state_.stateObject().network(this.state_, true);
             });
 
@@ -66,13 +73,17 @@ module PeerIo{
         private onStateChanged_ = (state: PeerJsStateEnum)=>{
             switch (state){
                 case PeerJsStateEnum.initial:
+                    console.log("state initial");
                     break;
                 case PeerJsStateEnum.online:
+                    console.log("state online");
                     if(!this.peer_.disconnected) {
+                        console.log("disconnected");
                         this.state_.stateObject().peer(this.state_, true);
                     }
                     break;
                 case PeerJsStateEnum.connected:
+                    console.log("state connected");
                     setTimeout(this._establishAllPeer, Util.waitTime(2000, 5000));
                     break;
                 case PeerJsStateEnum.wait_closing:
@@ -84,6 +95,7 @@ module PeerIo{
 
         private wrapPeerEvent_(){
             this.peer_.on("open", ()=>{
+                console.log("peer open");
                 this.state_.stateObject().peer(this.state_, true);
             });
             this.peer_.on('error', (err)=>{ console.log(err); });
@@ -99,6 +111,7 @@ module PeerIo{
         //=============Link generation methods start===========
 
         establishLink = (neighbour: NeighbourRecord)=>{
+            console.log(neighbour);
             switch(neighbour.type()){
                 case NeighbourTypeEnum.video:
                     this.tryCall_(neighbour);
@@ -110,8 +123,8 @@ module PeerIo{
         };
 
         private targetNeighbours_(): Array<NeighbourRecord>{
-            return _.reduce(this.neighbourSourceArray_, (container: Array<NeighbourRecord>, source: NeighbourSource)=>{
-                return Array.prototype.push.apply(container, source());
+            return _.reduce(this.neighbourSourceHash_, (container: Array<NeighbourRecord>, val: NeighbourSource, key: string)=>{
+                return container.concat(val());
             }, []);
         }
 
@@ -124,15 +137,17 @@ module PeerIo{
             var mediaConnection = this.peer_.call(neighbour.peerID(), streams[0]);
             mediaConnection.on("stream", (stream: MediaStream)=>{
                 var link = LinkComponentFactory.createLinkComponent(neighbour.peerID(), mediaConnection);
+                this.emit(this.OnNewMediaStream, link, stream);
             });
         }
 
         private onRecvCall_ = (mediaConnection: PeerJs.MediaConnection)=> {
             var neighbourID = mediaConnection.peer;
-            //mediaConnection.answer(this.defaultStreamHash_);
+            mediaConnection.answer(this.defaultStream_);
 
             mediaConnection.on("stream", (stream: MediaStream)=>{
                 var link = LinkComponentFactory.createLinkComponent(neighbourID, mediaConnection);
+                this.emit(this.OnNewMediaStream, link, stream);
             });
         };
 
@@ -141,6 +156,7 @@ module PeerIo{
 
             dataConnection.on('open', ()=>{
                 var link = LinkComponentFactory.createLinkComponent(neighbour.peerID(), dataConnection);
+                this.emit(this.OnNewDataChannel, link);
             });
         }
 
@@ -148,8 +164,8 @@ module PeerIo{
             var neighbourID = dataConnection.peer;
             dataConnection.on('open', ()=>{
                 var link = LinkComponentFactory.createLinkComponent(neighbourID, dataConnection);
+                this.emit(this.OnNewDataChannel, link);
             });
-//            this.emit(this.ON_LINK_FROM_NEIGHBOUR, neighbour);
         };
         //=============Link generation methods end===========
     }

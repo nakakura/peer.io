@@ -20,7 +20,7 @@ module.exports = function(config) {
       "./src/bower_components/jquery/dist/jquery.js",
       "./src/bower_components/lodash/lodash.js",
       "./src/bower_components/eventemitter2/lib/eventemitter2.js",
-      'src/models/**/*.js',
+      'src/states/*.js',
       'src/views/*.js',
       'src/controllers/*.js',
       'src/*.js',
