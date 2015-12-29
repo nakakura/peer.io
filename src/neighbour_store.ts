@@ -61,7 +61,7 @@ module PeerIo{
         }
 
         links(): Array<LinkComponentTemplate>{
-            return _.reduce(this.linksHash_, (innerContainer: Array<NeighbourRecord>, record: NeighbourRecord, key: string)=>{
+            return _.reduce(this.linksHash_, (innerContainer: Array<LinkComponentTemplate>, record: LinkComponentTemplate, key: string)=>{
                 return innerContainer.concat(record);
             }, []);
         }
