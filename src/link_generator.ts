@@ -144,7 +144,9 @@ module PeerIo{
 
         private tryCall_(neighbour: NeighbourRecord){
             var streams = neighbour.streams();
-            var mediaConnection = this.peer_.call(neighbour.peerID(), streams[0]);
+            var retStream = this.defaultStream_;
+            if(streams && streams.length > 0) retStream = streams[0];
+            var mediaConnection = this.peer_.call(neighbour.peerID(), retStream);
             if(!mediaConnection) return;
             mediaConnection.on("stream", (stream: MediaStream)=>{
                 var link = LinkComponentFactory.createLinkComponent(neighbour.peerID(), mediaConnection);
@@ -154,9 +156,13 @@ module PeerIo{
 
         private onRecvCall_ = (mediaConnection: PeerJs.MediaConnection)=> {
             var neighbourID = mediaConnection.peer;
-            mediaConnection.answer(this.defaultStream_);
             var neighbour = this.findNeighbour_(neighbourID);
-
+            var retStream = this.defaultStream_;
+            if(neighbour){
+                var streams = neighbour.streams();
+                if(streams && streams.length > 0) retStream = streams[0];
+            }
+            mediaConnection.answer(retStream);
             mediaConnection.on("stream", (stream: MediaStream)=>{
                 var link = LinkComponentFactory.createLinkComponent(neighbourID, mediaConnection);
                 this.emit(this.OnNewMediaStream, link, stream);

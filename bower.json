@@ -1,8 +1,8 @@
 {
   "name": "peer.io",
   "description": "",
-  "version": "0.1",
-  "main": "dist/minify.js",
+  "version": "0.1.1",
+  "main": "dist/peer.io.js",
   "authors": [
     "Toshiya Nakakura <nakakura@me.com>"
   ],

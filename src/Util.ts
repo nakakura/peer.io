@@ -24,5 +24,9 @@ module PeerIo {
         static isMediaConnection(link: Link): link is PeerJs.MediaConnection{
             return link && link.hasOwnProperty('localStream');
         }
+
+        static isMediaStream(stream: any): stream is MediaStream{
+            return stream && ('active' in stream) && ('id' in stream);
+        }
     }
 }

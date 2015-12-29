@@ -18,7 +18,7 @@ module PeerIo{
     }
 
     export class NeighbourRecord extends EventEmitter2{
-        private sources_: {[key: string]: MediaStream} = {};
+        private sources_: MediaStream[] = [];
         private option_: PeerJs.PeerConnectOption = {
             label: 'json',
             serialization: 'none',
@@ -34,19 +34,14 @@ module PeerIo{
         peerID(): string{ return this.peerId_; }
 
         streams(): MediaStream[]{
-            var streams = _.reduce(this.sources_, (container: Array<MediaStream>, stream: MediaStream, key: string)=>{
-                return container.concat([stream]);
-            }, []);
-            return streams;
+            return this.sources_;
         }
 
-        addStream(key: string, stream: MediaStream){
-            this.sources_[key] = stream;
-        }
-
-        removeStream(key: string){
-            if(key in this.sources_){
-                delete this.sources_[key];
+        setStream(stream: MediaStream | MediaStream[]){
+            if(stream instanceof Array){
+                Array.prototype.push.apply(this.sources_, stream);
+            } else if(Util.isMediaStream(stream)){
+                this.sources_.push(stream);
             }
         }
 

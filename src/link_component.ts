@@ -8,9 +8,15 @@
 /// <reference path="./util.ts" />
 
 module PeerIo {
+    interface PeerConnectOption{
+        label?: string;
+        metadata?: any;
+        serialization?: string;
+        reliable?: boolean;
+    }
+
     export class LinkComponentTemplate extends EventEmitter2 {
         OnStopVideo = "onStopVideo-in-peer.io.ts";
-        OnDataLinkUp = "onDataLinkUp-in-link_component.ts";
         OnDataLinkDown = "onDataLinkDown-in-link_component.ts";
         OnRecvData = "onRecvData-in-link_component.ts";
 
@@ -67,6 +73,14 @@ module PeerIo {
         close() {
             if(this.link_) this.link_.close();
             this.link_ = null;
+        }
+
+        options(): PeerConnectOption{
+            return {
+                metadata: this.link_.metadata,
+                serialization: this.link_.serialization,
+                reliable: this.link_.reliable
+            };
         }
     }
 

@@ -8,13 +8,7 @@
 /// <reference path="link_generator.ts" />
 
 module PeerIo{
-    export enum EventTypeEnum{
-        videoLinkUp = 1,
-        recvVideo = 2,
-        dataLinkUp = 3,
-        recvData = 4
-    }
-
+    import PeerConnectOption = PeerJs.PeerConnectOption;
     export var OnStartVideo = "onStartVideo-in-peer.io.ts";
     export var OnStopVideo = "onStopVideo-in-peer.io.ts";
     export var OnDataLinkUp = "onDataLinkUp";
@@ -38,7 +32,7 @@ module PeerIo{
 
         private newDataChannel_ = (link: DataLinkComponent)=>{
             this.neighbourStore_.addLink(link);
-            this.emit(OnDataLinkUp, link.peerID());
+            this.emit(OnDataLinkUp, link.peerID(), link.options());
             link.on(link.OnRecvData, (data)=>{
                 this.emit(OnRecvData, link.peerID(), data);
             });
@@ -53,14 +47,24 @@ module PeerIo{
             this.linkGenerator_.setDefaultStream(mediaStream);
         }
 
-        addNeighbour(peerId: string, type: NeighbourTypeEnum, stream?: MediaStream){
-            var neighbour = new NeighbourRecord(peerId, type);
-            if(stream) neighbour.addStream(stream.id, stream);
+        addVideoNeighbour(peerId: string, stream?: MediaStream | MediaStream[]){
+            var neighbour = new NeighbourRecord(peerId, NeighbourTypeEnum.video);
+            if(stream) neighbour.setStream(stream);
             this.neighbourStore_.addRecord(neighbour);
         }
 
-        removeNeighbour(peerId: string, type: NeighbourTypeEnum){
-            this.neighbourStore_.removeRecord(new NeighbourRecord(peerId, type));
+        addDataNeighbour(peerId: string, option?: PeerConnectOption){
+            var neighbour = new NeighbourRecord(peerId, NeighbourTypeEnum.data);
+            if(option) neighbour.setDataChannelOption(option);
+            this.neighbourStore_.addRecord(neighbour);
+        }
+
+        removeVideoNeighbour(peerId: string){
+            this.neighbourStore_.removeRecord(new NeighbourRecord(peerId, NeighbourTypeEnum.video));
+        }
+
+        removeDataNeighbour(peerId: string){
+            this.neighbourStore_.removeRecord(new NeighbourRecord(peerId, NeighbourTypeEnum.data));
         }
 
         //================= setup ==================
