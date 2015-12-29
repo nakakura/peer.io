@@ -6,10 +6,12 @@
 
 /// <reference path="./typings/tsd.d.ts" />
 /// <reference path="./link_component.ts" />
-/// <reference path="./Util.ts" />
+/// <reference path="./util.ts" />
 
 module PeerIo{
-    export type NeighbourSource = ()=>NeighbourRecord[];
+    export type NeighbourHash = {[key: string]: NeighbourRecord};
+    export type NeighbourSource = ()=>NeighbourHash;
+
     export enum NeighbourTypeEnum{
         video = 1,
         data = 2
@@ -32,9 +34,10 @@ module PeerIo{
         peerID(): string{ return this.peerId_; }
 
         streams(): MediaStream[]{
-            return _.reduce(this.sources_, (container: Array<NeighbourRecord>, stream: MediaStream, key: string)=>{
-                return Array.prototype.push.apply(container, stream);
+            var streams = _.reduce(this.sources_, (container: Array<MediaStream>, stream: MediaStream, key: string)=>{
+                return container.concat([stream]);
             }, []);
+            return streams;
         }
 
         addStream(key: string, stream: MediaStream){

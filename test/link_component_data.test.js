@@ -9,6 +9,7 @@ describe("DataLinkComponent", function() {
             send: function(message){},
             on: function(event){},
             close: function(){},
+            reliable: false,
             open: true
         };
 
@@ -69,7 +70,7 @@ describe("DataLinkComponent", function() {
         var callback = sinon.spy();
 
         dataLinkComp = PeerIo.LinkComponentFactory.createLinkComponent(neighbourID, link);
-        dataLinkComp.on(PeerIo.OnRecvData, callback);
+        dataLinkComp.on(dataLinkComp.OnRecvData, callback);
         expect(callback.callCount).to.deep.equal(0);
         var onData = spy_on.getCall(2).args[1];
         onData('hoge');
@@ -85,7 +86,7 @@ describe("DataLinkComponent", function() {
         var spy_on = sinon.spy(link, 'on');
         var callback = sinon.spy();
         dataLinkComp = PeerIo.LinkComponentFactory.createLinkComponent(neighbourID, link);
-        dataLinkComp.on(PeerIo.OnDataLinkDown, callback);
+        dataLinkComp.on(dataLinkComp.OnDataLinkDown, callback);
         expect(callback.callCount).to.deep.equal(0);
         var onClose = spy_on.getCall(0).args[1];
         onClose();
@@ -99,7 +100,7 @@ describe("DataLinkComponent", function() {
         var spy_on = sinon.spy(link, 'on');
         var callback = sinon.spy();
         dataLinkComp = PeerIo.LinkComponentFactory.createLinkComponent(neighbourID, link);
-        dataLinkComp.on(PeerIo.OnDataLinkDown, callback);
+        dataLinkComp.on(dataLinkComp.OnDataLinkDown, callback);
         dataLinkComp.close();
         expect(callback.callCount).to.deep.equal(0);
         expect(dataLinkComp.isEstablished()).to.deep.equal(false);

@@ -9,6 +9,7 @@ describe("DataLinkComponent", function() {
             answer: function(stream){},
             on: function(event){},
             close: function(){},
+            localStream: "hoge",
             open: true
         };
 

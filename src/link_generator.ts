@@ -55,7 +55,6 @@ module PeerIo{
             (<any>Offline).options = { checks: { xhr: { url: 'https://skyway.io/dist/0.3/peer.min.js' } } };
 
             Offline.on('up', ()=>{
-                console.log("offline up");
                 this.state_.stateObject().network(this.state_, true);
             });
 
@@ -73,17 +72,13 @@ module PeerIo{
         private onStateChanged_ = (state: PeerJsStateEnum)=>{
             switch (state){
                 case PeerJsStateEnum.initial:
-                    console.log("state initial");
                     break;
                 case PeerJsStateEnum.online:
-                    console.log("state online");
                     if(!this.peer_.disconnected) {
-                        console.log("disconnected");
                         this.state_.stateObject().peer(this.state_, true);
                     }
                     break;
                 case PeerJsStateEnum.connected:
-                    console.log("state connected");
                     setTimeout(this._establishAllPeer, Util.waitTime(2000, 5000));
                     break;
                 case PeerJsStateEnum.wait_closing:
@@ -95,7 +90,6 @@ module PeerIo{
 
         private wrapPeerEvent_(){
             this.peer_.on("open", ()=>{
-                console.log("peer open");
                 this.state_.stateObject().peer(this.state_, true);
             });
             this.peer_.on('error', (err)=>{ console.log(err); });
@@ -111,7 +105,6 @@ module PeerIo{
         //=============Link generation methods start===========
 
         establishLink = (neighbour: NeighbourRecord)=>{
-            console.log(neighbour);
             switch(neighbour.type()){
                 case NeighbourTypeEnum.video:
                     this.tryCall_(neighbour);
@@ -122,10 +115,27 @@ module PeerIo{
             }
         };
 
+        private findNeighbour_(key: string): NeighbourRecord{
+            var hash = _.find(this.neighbourSourceHash_, (item: NeighbourHash)=>{
+                return key in item;
+            });
+            if(hash) return hash[key];
+            return null;
+        }
+
+        private neighbourArray_(): Array<NeighbourRecord>{
+            return  _.reduce(this.neighbourSourceHash_, (container: Array<NeighbourRecord>, val: NeighbourSource, key: string)=>{
+               return _.reduce(val(), (innerContainer: Array<NeighbourRecord>, record: NeighbourRecord, key: string)=>{
+                   return innerContainer.concat(record);
+               }, container);
+           }, []);
+        }
+
         private targetNeighbours_(): Array<NeighbourRecord>{
-            return _.reduce(this.neighbourSourceHash_, (container: Array<NeighbourRecord>, val: NeighbourSource, key: string)=>{
-                return container.concat(val());
-            }, []);
+            var neighbours = this.neighbourArray_();
+            return _.filter(neighbours, (neighbour: NeighbourRecord)=>{
+                return !neighbour.isEstablished();
+            });
         }
 
         private _establishAllPeer = ()=>{
@@ -135,6 +145,7 @@ module PeerIo{
         private tryCall_(neighbour: NeighbourRecord){
             var streams = neighbour.streams();
             var mediaConnection = this.peer_.call(neighbour.peerID(), streams[0]);
+            if(!mediaConnection) return;
             mediaConnection.on("stream", (stream: MediaStream)=>{
                 var link = LinkComponentFactory.createLinkComponent(neighbour.peerID(), mediaConnection);
                 this.emit(this.OnNewMediaStream, link, stream);
@@ -144,6 +155,7 @@ module PeerIo{
         private onRecvCall_ = (mediaConnection: PeerJs.MediaConnection)=> {
             var neighbourID = mediaConnection.peer;
             mediaConnection.answer(this.defaultStream_);
+            var neighbour = this.findNeighbour_(neighbourID);
 
             mediaConnection.on("stream", (stream: MediaStream)=>{
                 var link = LinkComponentFactory.createLinkComponent(neighbourID, mediaConnection);
@@ -153,7 +165,7 @@ module PeerIo{
 
         private tryConnect_(neighbour: NeighbourRecord){
             var dataConnection = this.peer_.connect(neighbour.peerID(), neighbour.dataChannelOption());
-
+            if(!dataConnection) return;
             dataConnection.on('open', ()=>{
                 var link = LinkComponentFactory.createLinkComponent(neighbour.peerID(), dataConnection);
                 this.emit(this.OnNewDataChannel, link);

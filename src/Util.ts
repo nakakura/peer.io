@@ -18,11 +18,11 @@ module PeerIo {
         }
 
         static isDataChannel(link: Link): link is PeerJs.DataConnection{
-            return link && link.hasOwnProperty('send');
+            return link && link.hasOwnProperty('reliable');
         }
 
         static isMediaConnection(link: Link): link is PeerJs.MediaConnection{
-            return link && link.hasOwnProperty('answer');
+            return link && link.hasOwnProperty('localStream');
         }
     }
 }

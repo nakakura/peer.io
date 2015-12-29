@@ -1,12 +1,11 @@
 // Main Controller
 
 /// <reference path="typings/tsd.d.ts" />
-/// <reference path="models/states/peerjs_state.ts" />
-/// <reference path="models/states/offline_state.ts" />
-/// <reference path="models/states/wait_closing_state.ts" />
-/// <reference path="models/neighbour.ts" />
-/// <reference path="models/target_neighbours.ts" />
-/// <reference path="models/peerjs_manager.ts" />
+/// <reference path="util.ts" />
+/// <reference path="neighbour_record.ts" />
+/// <reference path="neighbour_store.ts" />
+/// <reference path="link_component.ts" />
+/// <reference path="link_generator.ts" />
 
 module PeerIo{
     export enum EventTypeEnum{
@@ -16,72 +15,66 @@ module PeerIo{
         recvData = 4
     }
 
-    type DataListener = (peerId: string, message: string)=>void;
-    type MediaListener = (peerId: string, stream: MediaStream)=>void;
+    export var OnStartVideo = "onStartVideo-in-peer.io.ts";
+    export var OnStopVideo = "onStopVideo-in-peer.io.ts";
+    export var OnDataLinkUp = "onDataLinkUp";
+    export var OnDataLinkDown = "onDataLinkDown";
+    export var OnRecvData = "onRecvData";
 
     export class PeerIo extends EventEmitter2{
-        private _peerJsManager: PeerJsManager;
-        private _targetNeighbours: TargetNeighbours;
+        private linkGenerator_: LinkGenerator;
+        private neighbourStore_: NeighbourStore;
 
         //================= setup ==================
-        constructor(peerJs: PeerJs.Peer){
+        constructor(private peerJs_: PeerJs.Peer){
             super();
-            this._targetNeighbours = new TargetNeighbours();
-            this._peerJsManager = new PeerJsManager(peerJs);
-            this._peerJsManager.addNeighboursSource("targetNeighbours", this._targetNeighbours.targetNeighbours);
-            this._peerJsManager.on(this._peerJsManager.ON_LINK_FROM_NEIGHBOUR, this._onLinkFromNeighbour);
-            this._targetNeighbours.on(ON_NEED_ESTABLISH_LINK, this._peerJsManager.establishLink);
+            this.neighbourStore_ = new NeighbourStore();
+            this.linkGenerator_ = new LinkGenerator(peerJs_);
+            this.linkGenerator_.addNeighbourSource("neighbourSource", this.neighbourStore_.neighbours);
+            this.linkGenerator_.on(this.linkGenerator_.OnNewDataChannel, this.newDataChannel_);
+            this.linkGenerator_.on(this.linkGenerator_.OnNewMediaStream, this.newMediaStream_);
+            this.neighbourStore_.on(this.neighbourStore_.NEED_ESTABLISH_LINK, this.linkGenerator_.establishLink);
         }
 
-        addDefaultStream(mediaStream: MediaStream | MediaStream[]){
-            this._peerJsManager.addDefaultStream(mediaStream);
+        private newDataChannel_ = (link: DataLinkComponent)=>{
+            this.neighbourStore_.addLink(link);
+            this.emit(OnDataLinkUp, link.peerID());
+            link.on(link.OnRecvData, (data)=>{
+                this.emit(OnRecvData, link.peerID(), data);
+            });
+        };
+
+        private newMediaStream_ = (link: VideoLinkComponent, stream: MediaStream)=>{
+            this.neighbourStore_.addLink(link);
+            this.emit(OnStartVideo, link.peerID(), stream);
+        };
+
+        addDefaultStream(mediaStream: MediaStream){
+            this.linkGenerator_.setDefaultStream(mediaStream);
         }
 
-        addNeighbour(peerId: string, type: NeighbourTypeEnum, stream?: MediaStream | MediaStream[]){
-            var neighbour = NeighbourFactory.createNeighbour(peerId, type);
-            if(stream) neighbour.setSource(stream);
-            if(this._targetNeighbours.tryAddNeighbour(neighbour)){
-                this._addCallbackToNeighbour(neighbour);
-            }
+        addNeighbour(peerId: string, type: NeighbourTypeEnum, stream?: MediaStream){
+            var neighbour = new NeighbourRecord(peerId, type);
+            if(stream) neighbour.addStream(stream.id, stream);
+            this.neighbourStore_.addRecord(neighbour);
         }
 
         removeNeighbour(peerId: string, type: NeighbourTypeEnum){
-            var neighbour = NeighbourFactory.createNeighbour(peerId, type);
-            this._targetNeighbours.removeNeighbour(neighbour.key());
+            this.neighbourStore_.removeRecord(new NeighbourRecord(peerId, type));
         }
 
         //================= setup ==================
 
-        private _onLinkFromNeighbour = (neighbour: NeighbourTemplate)=>{
-            if(this._targetNeighbours.tryAddNeighbour(neighbour)){
-                this._addCallbackToNeighbour(neighbour);
-            }
-        };
-
-        private _addCallbackToNeighbour(neighbour: NeighbourTemplate){
-            switch(neighbour.type()){
-                case NeighbourTypeEnum.video:
-                    neighbour.on(OnStartVideo, (stream)=>{ this.emit(OnStartVideo, neighbour.peerID(), stream); });
-                    neighbour.on(OnStopVideo, ()=>{ this.emit(OnStopVideo, neighbour.peerID()); });
-                    break;
-                case NeighbourTypeEnum.data:
-                    neighbour.on(OnRecvData, (stream)=>{ this.emit(OnRecvData, neighbour.peerID(), stream); });
-                    neighbour.on(OnDataLinkUp, ()=>{ this.emit(OnDataLinkUp, neighbour.peerID()); });
-                    neighbour.on(OnDataLinkDown, ()=>{ this.emit(OnDataLinkDown, neighbour.peerID()); });
-                    break;
-            }
-        }
-
         //================= data channel ===========
         send(peerId: string, message: string){
-            var target = this._targetNeighbours.findNeighbour(peerId + "-data");
+            var target = this.neighbourStore_.findLink(peerId + "-data");
             if(target) target.send(message);
         }
 
         broadcast(message: string){
-            var neighbours = this._targetNeighbours.connectedNeighbours();
-            _.each(neighbours, (neighbour)=>{
-                neighbour.send(message);
+            var neighbours = this.neighbourStore_.links();
+            _.each(neighbours, (link)=>{
+                link.send(message);
             });
         }
         //================= data channel ===========

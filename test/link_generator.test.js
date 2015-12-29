@@ -34,6 +34,7 @@ describe("LinkGenerator", function() {
         //this test will fail if test client is offline.
         var link = {
             answer: function(stream){},
+            localStream: "hoge",
             on: function(event){},
             close: function(){},
             open: true
@@ -49,6 +50,7 @@ describe("LinkGenerator", function() {
                 var stream = {};
                 stream.on = spy_stream_on;
                 stream.answer = function(){  };
+                stream.localStream = "hoge";
                 return stream;
             }
         };
@@ -56,7 +58,8 @@ describe("LinkGenerator", function() {
         var source = function(){
             var neighbour = PeerIo.LinkComponentFactory.createLinkComponent("neighbour", link);
             neighbour.streams = function(){ return [localStream] };
-            return [neighbour];
+            neighbour.isEstablished = function(){ return false; };
+            return {neighbour: neighbour};
         };
         var linkGenerator = new PeerIo.LinkGenerator(peer);
         linkGenerator.addNeighbourSource("source", source);
@@ -64,17 +67,16 @@ describe("LinkGenerator", function() {
         var onOfflineUp = spy_offline_on.getCall(0).args[1];
         var onPeerOpen = spy_peer_on.getCall(0).args[1];
         onOfflineUp();
-        console.log("onpeeropen");
         onPeerOpen();
         clock.tick(5000);
 
         linkGenerator.on(linkGenerator.OnNewMediaStream, function(link, stream){
-            console.log(link);
             expect(link.type()).to.deep.equal(PeerIo.NeighbourTypeEnum.video);
             expect(stream).to.deep.equal("new stream");
             done();
         });
 
+        expect(spy_stream_on.callCount).to.deep.equal(1);
         var onStream = spy_stream_on.getCall(0).args[1];
         onStream("new stream");
     });
@@ -83,6 +85,7 @@ describe("LinkGenerator", function() {
         //this test will fail if test client is offline.
         var link = {
             answer: function(stream){},
+            localStream: "hoge",
             on: function(event){},
             close: function(){},
             open: true
@@ -96,6 +99,7 @@ describe("LinkGenerator", function() {
                 expect(localStream_).to.deep.equal(localStream);
                 var stream = {};
                 stream.answer = function(){  };
+                stream.localStream = "hoge";
                 return stream;
             }
         };
@@ -104,14 +108,13 @@ describe("LinkGenerator", function() {
         linkGenerator.setDefaultStream("default stream");
 
         linkGenerator.on(linkGenerator.OnNewMediaStream, function(link, stream){
-            console.log(link);
             expect(link.type()).to.deep.equal(PeerIo.NeighbourTypeEnum.video);
             expect(stream).to.deep.equal("new stream");
             done();
         });
 
         var onCall = spy_peer_on.getCall(4).args[1];
-        var mediaConnection = {peer: "neighbour", on: function(){}, answer: function(){}};
+        var mediaConnection = {peer: "neighbour", on: function(){}, answer: function(){}, localStream: "hoge"};
         var spy_mediaconnection_answer = sinon.spy(mediaConnection, "answer");
         var spy_mediaconnection_on = sinon.spy(mediaConnection, "on");
         onCall(mediaConnection);
@@ -127,7 +130,7 @@ describe("LinkGenerator", function() {
         var link = {
             on: function(event){},
             close: function(){},
-            send: function(message){},
+            reliable: false,
             open: true
         };
         var option = "hoge";
@@ -138,17 +141,18 @@ describe("LinkGenerator", function() {
             connect: function(peerId, option_){
                 expect(peerId).to.deep.equal("neighbour");
                 expect(option_).to.deep.equal(option);
-                var stream = {};
-                stream.on = spy_stream_on;
-                stream.send = function(){};
-                return stream;
+                var dataChannel = {};
+                dataChannel.on = spy_stream_on;
+                dataChannel.reliable = false;
+                return dataChannel;
             }
         };
         var spy_peer_on = sinon.spy(peer, "on");
         var source = function(){
             var neighbour = PeerIo.LinkComponentFactory.createLinkComponent("neighbour", link);
             neighbour.dataChannelOption = function(){ return option };
-            return [neighbour];
+            neighbour.isEstablished = function(){ return false; };
+            return {neighbour: neighbour};
         };
         var linkGenerator = new PeerIo.LinkGenerator(peer);
         linkGenerator.addNeighbourSource("source", source);
@@ -156,7 +160,6 @@ describe("LinkGenerator", function() {
         var onOfflineUp = spy_offline_on.getCall(0).args[1];
         var onPeerOpen = spy_peer_on.getCall(0).args[1];
         onOfflineUp();
-        console.log("onpeeropen");
         onPeerOpen();
         clock.tick(5000);
 
@@ -172,36 +175,34 @@ describe("LinkGenerator", function() {
     it("on connect from neighbour", function (done) {
         //this test will fail if test client is offline.
         var link = {
-            send: function(message){},
             on: function(event){},
             close: function(){},
+            reliable: false,
             open: true
         };
         var localStream = "hoge";
         var peer = {
             on: function(){},
             disconnected: false,
-            call: function(peerId, localStream_){
+            connect: function(peerId, localStream_){
                 expect(peerId).to.deep.equal("neighbour");
                 expect(localStream_).to.deep.equal(localStream);
-                var stream = {};
-                stream.answer = function(){  };
-                return stream;
+                var dataChannel = {};
+                dataChannel.reliable = false;
+                return dataChannel;
             }
         };
         var spy_peer_on = sinon.spy(peer, "on");
         var linkGenerator = new PeerIo.LinkGenerator(peer);
 
         linkGenerator.on(linkGenerator.OnNewDataChannel, function(link){
-            console.log(link);
             expect(link.type()).to.deep.equal(PeerIo.NeighbourTypeEnum.data);
             done();
         });
 
         var onConnection = spy_peer_on.getCall(3).args[1];
-        var dataConnection = {peer: "neighbour", on: function(){}, send: function(message){}};
-        var spy_dataconnection_on = sinon.spy(dataConnection, "on");
-        onConnection(dataConnection);
+        var spy_dataconnection_on = sinon.spy(link, "on");
+        onConnection(link);
         var onDataOpen = spy_dataconnection_on.getCall(0).args[1];
         onDataOpen();
     });

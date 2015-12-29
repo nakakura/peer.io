@@ -5,16 +5,15 @@
 
 /// <reference path="./typings/tsd.d.ts" />
 /// <reference path="./neighbour_record.ts" />
-/// <reference path="./Util.ts" />
+/// <reference path="./util.ts" />
 
 module PeerIo {
-    export var OnStartVideo = "onStartVideo-in-peer.io.ts";
-    export var OnStopVideo = "onStopVideo-in-peer.io.ts";
-    export var OnDataLinkUp = "onDataLinkUp-in-link_component.ts";
-    export var OnDataLinkDown = "onDataLinkDown-in-link_component.ts";
-    export var OnRecvData = "onRecvData-in-link_component.ts";
-
     export class LinkComponentTemplate extends EventEmitter2 {
+        OnStopVideo = "onStopVideo-in-peer.io.ts";
+        OnDataLinkUp = "onDataLinkUp-in-link_component.ts";
+        OnDataLinkDown = "onDataLinkDown-in-link_component.ts";
+        OnRecvData = "onRecvData-in-link_component.ts";
+
         constructor(protected peerID_:string, protected link_: Link) {
             super();
         }
@@ -38,7 +37,7 @@ module PeerIo {
 
             link_.on('close', ()=> {
                 this.link_ = null;
-                this.emit(OnDataLinkDown);
+                this.emit(this.OnDataLinkDown);
             });
 
             link_.on('error', (error)=> {
@@ -46,7 +45,7 @@ module PeerIo {
             });
 
             link_.on('data', (data:string)=> {
-                this.emit(OnRecvData, data);
+                this.emit(this.OnRecvData, data);
             });
         }
 
@@ -79,7 +78,7 @@ module PeerIo {
 
             link_.on('close', ()=> {
                 this.link_ = null;
-                this.emit(OnStopVideo);
+                this.emit(this.OnStopVideo);
             });
 
             link_.on('error', (error)=> {

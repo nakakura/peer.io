@@ -9,12 +9,18 @@
 
 module PeerIo{
     export class NeighbourStore extends EventEmitter2{
-        private recordsHash_: {[key: string]: NeighbourRecord} = {};
+        NEED_ESTABLISH_LINK = "need-establish-link-in-neighbourstore";
+        private recordsHash_: NeighbourHash = {};
         private linksHash_: {[key: string]: LinkComponentTemplate} = {};
-        private NEED_ESTABLISH_LINK = "need-establish-link-in-neighbourstore";
 
         constructor(){
             super();
+        }
+
+        private addRecord_(record: NeighbourRecord){
+            record.isEstablished = this.isEstablished_.bind(this, record.key());
+            record.addLink = this.addLink_.bind(this, record.key());
+            this.recordsHash_[record.key()] = record;
         }
 
         addRecord(record: NeighbourRecord){
@@ -26,9 +32,7 @@ module PeerIo{
                    this.emit(this.NEED_ESTABLISH_LINK, this.recordsHash_[record.key()]);
                }
            } else{
-               record.isEstablished = this.isEstablished_.bind(this, record.key());
-               record.addLink = this.addLink_.bind(this, record.key());
-               this.recordsHash_[record.key()] = record;
+               this.addRecord_(record);
                this.emit(this.NEED_ESTABLISH_LINK, record);
            }
         }
@@ -43,6 +47,28 @@ module PeerIo{
                 delete this.recordsHash_[record.key()];
             }
         }
+
+        addLink(link: LinkComponentTemplate){
+            if(!(link.key() in this.recordsHash_)){
+                var record = new NeighbourRecord(link.peerID(), link.type());
+                this.addRecord_(record);
+            }
+            this.linksHash_[link.key()] = link;
+        }
+
+        findLink(key: string): LinkComponentTemplate{
+            return this.linksHash_[key];
+        }
+
+        links(): Array<LinkComponentTemplate>{
+            return _.reduce(this.linksHash_, (innerContainer: Array<NeighbourRecord>, record: NeighbourRecord, key: string)=>{
+                return innerContainer.concat(record);
+            }, []);
+        }
+
+        neighbours:()=>NeighbourHash = ()=>{
+            return this.recordsHash_;
+        };
 
         private addLink_(key: string, link: LinkComponentTemplate){
             if(this.isEstablished_(key)) this.linksHash_[key].close();
