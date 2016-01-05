@@ -27,6 +27,7 @@ module PeerIo{
 
         constructor(private peerId_: string, private type_: NeighbourTypeEnum){
             super();
+            console.log("create neighbour record " + peerId_ + " type " + type_);
         }
 
         type(){ return this.type_; }
@@ -38,9 +39,14 @@ module PeerIo{
         }
 
         setStream(stream: MediaStream | MediaStream[]){
+            console.log('setstream');
             if(stream instanceof Array){
+                console.log("array");
+                console.log(stream[0].getVideoTracks());
                 Array.prototype.push.apply(this.sources_, stream);
             } else if(Util.isMediaStream(stream)){
+                console.log("stream");
+                console.log(stream.getVideoTracks());
                 this.sources_.push(stream);
             }
         }

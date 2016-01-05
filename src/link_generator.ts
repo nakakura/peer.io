@@ -116,10 +116,10 @@ module PeerIo{
         };
 
         private findNeighbour_(key: string): NeighbourRecord{
-            var hash = _.find(this.neighbourSourceHash_, (item: NeighbourHash)=>{
-                return key in item;
+            var source = _.find(this.neighbourSourceHash_, (item: NeighbourSource)=>{
+                return key in item();
             });
-            if(hash) return hash[key];
+            if(source) return source()[key];
             return null;
         }
 
@@ -156,11 +156,13 @@ module PeerIo{
 
         private onRecvCall_ = (mediaConnection: PeerJs.MediaConnection)=> {
             var neighbourID = mediaConnection.peer;
-            var neighbour = this.findNeighbour_(neighbourID);
+            var neighbour = this.findNeighbour_(Util.key(neighbourID, NeighbourTypeEnum.video));
             var retStream = this.defaultStream_;
             if(neighbour){
                 var streams = neighbour.streams();
-                if(streams && streams.length > 0) retStream = streams[0];
+                if(streams && streams.length > 0) {
+                    retStream = streams[0];
+                }
             }
             mediaConnection.answer(retStream);
             mediaConnection.on("stream", (stream: MediaStream)=>{
