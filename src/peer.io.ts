@@ -36,11 +36,18 @@ module PeerIo{
             link.on(link.OnRecvData, (data)=>{
                 this.emit(OnRecvData, link.peerID(), data);
             });
+
+            link.on(link.OnDataLinkDown, () =>{
+                this.emit(OnStopVideo, link.peerID());
+            });
         };
 
         private newMediaStream_ = (link: VideoLinkComponent, stream: MediaStream)=>{
             this.neighbourStore_.addLink(link);
             this.emit(OnStartVideo, link.peerID(), stream);
+            link.on(link.OnStopVideo, ()=>{
+                this.emit(OnStopVideo, link.peerID());
+            });
         };
 
         addDefaultStream(mediaStream: MediaStream){
