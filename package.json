@@ -10,11 +10,27 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nakakura/webpack-react-typescript-karma-skelton.git"
+    "url": "git+https://github.com/nakakura/peer.io.git"
   },
   "author": "Toshiya Nakakura<nakakura@me.com>",
   "license": "MIT",
-  "homepage": "https://github.com/nakakura/webpack-react-typescript-karma-skelton",
+  "homepage": "https://github.com/nakakura/peer.io",
+  "ignore": [
+    "**/.*",
+    "webpack*",
+    "helper",
+    "xml",
+    "typings",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "gulpfile.js",
+    "karma.conf.js",
+    "tsd.json",
+    "package.json",
+    "src"
+  ],
   "devDependencies": {
     "babel": "^6.0.0",
     "babel-core": "^6.0.0",
@@ -46,7 +62,6 @@
   },
   "dependencies": {
     "eventemitter2": "^1.0.0",
-    "offline": "0.0.1",
     "peerjs": "^0.3.14"
   }
 }

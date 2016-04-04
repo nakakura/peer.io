@@ -2,7 +2,7 @@
   "name": "peer.io",
   "description": "",
   "version": "0.1.1",
-  "main": "dist/peer.io.js",
+  "main": "dist/bower/peer.io.js",
   "authors": [
     "Toshiya Nakakura <nakakura@me.com>"
   ],
@@ -17,12 +17,17 @@
   "private": true,
   "ignore": [
     "**/.*",
+    "webpack*",
+    "helper",
+    "xml",
+    "typings",
     "node_modules",
     "bower_components",
     "test",
     "tests",
     "gulpfile.js",
     "karma.conf.js",
+    "tsd.json",
     "package.json",
     "src"
   ],
