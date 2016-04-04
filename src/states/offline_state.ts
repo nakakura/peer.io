@@ -1,21 +1,19 @@
 // オフライン Peer確立なし 接続要求もなし
 // 初期状態
 
-/// <reference path="../typings/tsd.d.ts" />
-/// <reference path="./peerjs_state.ts" />
-/// <reference path="./online_state.ts" />
+/// <reference path="../../typings/tsd.d.ts" />
+import {PeerJsStateEnum, PeerJsStateManager, PeerJsStateIf} from './peerjs_state';
+import OnlineState from './online_state';
+import ConnectedState from './connected_state';
 
-module PeerIo{
-    export class OfflineState implements PeerJsStateIf{
-        state(){ return PeerJsStateEnum.initial };
+export default class OfflineState implements PeerJsStateIf{
+  state(){ return PeerJsStateEnum.initial };
 
-        network(state: PeerJsStateManager, isOnline: boolean){
-            if(isOnline) state.setStateObject(new OnlineState());
-        }
+  network(state: PeerJsStateManager, isOnline: boolean){
+    if(isOnline) state.setStateObject(new OnlineState());
+  }
 
-        peer(state: PeerJsStateManager, isConnected: boolean){
-            //オフライン状態でpeerjsのステータスは変わらないので無視
-        }
-    }
+  peer(state: PeerJsStateManager, isConnected: boolean){
+    //オフライン状態でpeerjsのステータスは変わらないので無視
+  }
 }
-

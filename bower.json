@@ -27,9 +27,9 @@
     "src"
   ],
   "dependencies": {
-    "eventemitter2": "~0.4.14",
-    "peerjs": "~0.3.14",
-    "lodash": "~3.10.1",
-    "offline": "~0.7.14"
+    "peerjs": "~0.3.14"
+  },
+  "devDependencies": {
+    "offline": "~0.7.15"
   }
 }

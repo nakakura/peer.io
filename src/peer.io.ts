@@ -1,94 +1,98 @@
 // Main Controller
 
-/// <reference path="typings/tsd.d.ts" />
-/// <reference path="util.ts" />
-/// <reference path="neighbour_record.ts" />
-/// <reference path="neighbour_store.ts" />
-/// <reference path="link_component.ts" />
-/// <reference path="link_generator.ts" />
+/// <reference path="../typings/tsd.d.ts" />
+import {Util} from './Util';
+import {NeighbourRecord, NeighbourSource, NeighbourHash} from './neighbour_record';
+import NeighbourStore from './neighbour_store'
+import {PeerConnectOption, LinkComponentTemplate, DataLinkComponent, VideoLinkComponent, LinkComponentFactory} from './link_component';
+import LinkGenerator from './link_generator';
+import {EventEmitter2} from 'eventemitter2';
+import * as _ from "lodash";
 
-module PeerIo{
-    import PeerConnectOption = PeerJs.PeerConnectOption;
-    export var OnStartVideo = "onStartVideo-in-peer.io.ts";
-    export var OnStopVideo = "onStopVideo-in-peer.io.ts";
-    export var OnDataLinkUp = "onDataLinkUp";
-    export var OnDataLinkDown = "onDataLinkDown";
-    export var OnRecvData = "onRecvData";
+export enum NeighbourTypeEnum{
+  video = 1,
+  data = 2
+}
 
-    export class PeerIo extends EventEmitter2{
-        private linkGenerator_: LinkGenerator;
-        private neighbourStore_: NeighbourStore;
+export var OnStartVideo = "onStartVideo-in-peer.io.ts";
+export var OnStopVideo = "onStopVideo-in-peer.io.ts";
+export var OnDataLinkUp = "onDataLinkUp";
+export var OnDataLinkDown = "onDataLinkDown";
+export var OnRecvData = "onRecvData";
 
-        //================= setup ==================
-        constructor(private peerJs_: PeerJs.Peer){
-            super();
-            this.neighbourStore_ = new NeighbourStore();
-            this.linkGenerator_ = new LinkGenerator(peerJs_);
-            this.linkGenerator_.addNeighbourSource("neighbourSource", this.neighbourStore_.neighbours);
-            this.linkGenerator_.on(this.linkGenerator_.OnNewDataChannel, this.newDataChannel_);
-            this.linkGenerator_.on(this.linkGenerator_.OnNewMediaStream, this.newMediaStream_);
-            this.neighbourStore_.on(this.neighbourStore_.NEED_ESTABLISH_LINK, this.linkGenerator_.establishLink);
-        }
+export class PeerIo extends EventEmitter2{
+  private linkGenerator_: LinkGenerator;
+  private neighbourStore_: NeighbourStore;
 
-        private newDataChannel_ = (link: DataLinkComponent)=>{
-            this.neighbourStore_.addLink(link);
-            this.emit(OnDataLinkUp, link.peerID(), link.options());
-            link.on(link.OnRecvData, (data)=>{
-                this.emit(OnRecvData, link.peerID(), data);
-            });
+  //================= setup ==================
+  constructor(private peerJs_: PeerJs.Peer){
+    super();
+    this.neighbourStore_ = new NeighbourStore();
+    this.linkGenerator_ = new LinkGenerator(peerJs_);
+    this.linkGenerator_.addNeighbourSource("neighbourSource", this.neighbourStore_.neighbours);
+    this.linkGenerator_.on(this.linkGenerator_.OnNewDataChannel, this.newDataChannel_);
+    this.linkGenerator_.on(this.linkGenerator_.OnNewMediaStream, this.newMediaStream_);
+    this.neighbourStore_.on(this.neighbourStore_.NEED_ESTABLISH_LINK, this.linkGenerator_.establishLink);
+  }
 
-            link.on(link.OnDataLinkDown, () =>{
-                this.emit(OnStopVideo, link.peerID());
-            });
-        };
+  private newDataChannel_ = (link: DataLinkComponent)=>{
+    this.neighbourStore_.addLink(link);
+    this.emit(OnDataLinkUp, link.peerID(), link.options());
+    link.on(link.OnRecvData, (data)=>{
+      this.emit(OnRecvData, link.peerID(), data);
+    });
 
-        private newMediaStream_ = (link: VideoLinkComponent, stream: MediaStream)=>{
-            this.neighbourStore_.addLink(link);
-            this.emit(OnStartVideo, link.peerID(), stream);
-            link.on(link.OnStopVideo, ()=>{
-                this.emit(OnStopVideo, link.peerID());
-            });
-        };
+    link.on(link.OnDataLinkDown, () =>{
+      this.emit(OnStopVideo, link.peerID());
+    });
+  };
 
-        addDefaultStream(mediaStream: MediaStream){
-            this.linkGenerator_.setDefaultStream(mediaStream);
-        }
+  private newMediaStream_ = (link: VideoLinkComponent, stream: MediaStream)=>{
+    this.neighbourStore_.addLink(link);
+    this.emit(OnStartVideo, link.peerID(), stream);
+    link.on(link.OnStopVideo, ()=>{
+      this.emit(OnStopVideo, link.peerID());
+    });
+  };
 
-        addVideoNeighbour(peerId: string, stream?: MediaStream | MediaStream[]){
-            var neighbour = new NeighbourRecord(peerId, NeighbourTypeEnum.video);
-            if(stream) neighbour.setStream(stream);
-            this.neighbourStore_.addRecord(neighbour);
-        }
+  addDefaultStream(mediaStream: MediaStream){
+    this.linkGenerator_.setDefaultStream(mediaStream);
+  }
 
-        addDataNeighbour(peerId: string, option?: PeerConnectOption){
-            var neighbour = new NeighbourRecord(peerId, NeighbourTypeEnum.data);
-            if(option) neighbour.setDataChannelOption(option);
-            this.neighbourStore_.addRecord(neighbour);
-        }
+  addVideoNeighbour(peerId: string, stream?: MediaStream | MediaStream[]){
+    var neighbour = new NeighbourRecord(peerId, NeighbourTypeEnum.video);
+    if(stream) neighbour.setStream(stream);
+    this.neighbourStore_.addRecord(neighbour);
+  }
 
-        removeVideoNeighbour(peerId: string){
-            this.neighbourStore_.removeRecord(new NeighbourRecord(peerId, NeighbourTypeEnum.video));
-        }
+  addDataNeighbour(peerId: string, option?: PeerConnectOption){
+    var neighbour = new NeighbourRecord(peerId, NeighbourTypeEnum.data);
+    if(option) neighbour.setDataChannelOption(option);
+    this.neighbourStore_.addRecord(neighbour);
+  }
 
-        removeDataNeighbour(peerId: string){
-            this.neighbourStore_.removeRecord(new NeighbourRecord(peerId, NeighbourTypeEnum.data));
-        }
+  removeVideoNeighbour(peerId: string){
+    this.neighbourStore_.removeRecord(new NeighbourRecord(peerId, NeighbourTypeEnum.video));
+  }
 
-        //================= setup ==================
+  removeDataNeighbour(peerId: string){
+    this.neighbourStore_.removeRecord(new NeighbourRecord(peerId, NeighbourTypeEnum.data));
+  }
 
-        //================= data channel ===========
-        send(peerId: string, message: string){
-            var target = this.neighbourStore_.findLink(peerId + "-data");
-            if(target) target.send(message);
-        }
+  //================= setup ==================
 
-        broadcast(message: string){
-            var neighbours = this.neighbourStore_.links();
-            _.each(neighbours, (link)=>{
-                link.send(message);
-            });
-        }
-        //================= data channel ===========
-    }
+  //================= data channel ===========
+  send(peerId: string, message: string){
+    var target = this.neighbourStore_.findLink(peerId + "-data");
+    if(target) target.send(message);
+  }
+
+  broadcast(message: string){
+    var neighbours = this.neighbourStore_.links();
+    _.each(neighbours, (link)=>{
+      link.send(message);
+    });
+  }
+  //================= data channel ===========
 }
 

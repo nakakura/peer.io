@@ -6,7 +6,7 @@
 *.js
 *.js.map
 node_modules
-/src/bower_components
+bower_components
 /src/typings
 !/karma.conf.js
 !/gulpfile.js

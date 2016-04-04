@@ -1,78 +1,80 @@
-// Karma configuration
-// Generated on Wed Dec 02 2015 14:18:22 GMT+0900 (JST)
+/* eslint-disable no-var, strict */
+'use strict';
+
+var path = require('path');
+console.log("karma conf js");
+var webPackPath = path.join(__dirname, "webpack.config.js");
+console.log(webPackPath);
+var webpackConfig = require(webPackPath);
+
+console.log(process.cwd());
+console.log(__dirname);
+
+console.log(webpackConfig);
+console.log(webpackConfig.module);
+console.log(webpackConfig.resolve);
 
 module.exports = function(config) {
+  // Documentation: https://karma-runner.github.io/0.13/config/configuration-file.html
   config.set({
+    browsers: [ 'PhantomJS' ],
 
-    // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: '',
-
-
-    // frameworks to use
-    // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha', 'sinon', 'sinon-chai'],
-
-
-    // list of files / patterns to load in the browser
     files: [
-      "./src/bower_components/offline/offline.js",
-      "./src/bower_components/peerjs/peer.js",
-      "./src/bower_components/jquery/dist/jquery.js",
-      "./src/bower_components/lodash/lodash.js",
-      "./src/bower_components/eventemitter2/lib/eventemitter2.js",
-      'src/states/*.js',
-      'src/views/*.js',
-      'src/controllers/*.js',
-      'src/*.js',
-      'test/**/*.test.js'
+      'test/import-babel-polyfill.js', // This ensures we have the es6 shims in place from babel
+      'test/**/*.tests.ts',
+      'test/**/*.tests.tsx'
     ],
 
+    port: 9876,
 
-    // list of files to exclude
-    exclude: [
-    ],
+    frameworks: [ 'jasmine' ],
 
+    logLevel: config.LOG_INFO, //config.LOG_DEBUG
 
-    // preprocess matching files before serving them to the browser
-    // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
+      'test/import-babel-polyfill.js': [ 'webpack', 'sourcemap' ],
+      'src/**/*.{ts,tsx}': [ 'webpack', 'sourcemap' ],
+      'test/**/*.tests.{ts,tsx}': [ 'webpack', 'sourcemap' ]
     },
 
 
-    // test results reporter to use
-    // possible values: 'dots', 'progress'
-    // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress'],
+    webpack: {
+      devtool: 'eval-source-map', //'inline-source-map',
+      debug: true,
+      module: webpackConfig.module,
+      resolve: webpackConfig.resolve
+    },
 
+    webpackMiddleware: {
+      quiet: true,
+      stats: {
+        colors: true
+      }
+    },
 
-    // web server port
-    port: 9876,
+    // reporter options
+    mochaReporter: {
+      colors: {
+        success: 'bgGreen',
+        info: 'cyan',
+        warning: 'bgBlue',
+        error: 'bgRed'
+      }
+    },
 
+    // the default configuration
+    junitReporter: {
+      outputDir: 'test-results', // results will be saved as $outputDir/$browserName.xml
+      outputFile: undefined, // if included, results will be saved as $outputDir/$browserName/$outputFile
+      suite: ''
+    },
 
-    // enable / disable colors in the output (reporters and logs)
-    colors: true,
-
-
-    // level of logging
-    // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_INFO,
-
-
-    // enable / disable watching file and executing tests whenever any file changes
-    autoWatch: true,
-
-
-    // start these browsers
-    // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'],
-
-
-    // Continuous Integration mode
-    // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false,
-
-    // Concurrency level
-    // how many browser should be started simultanous
-    concurrency: Infinity
-  })
+    coverageReporter: {
+      reporters:[
+        //{type: 'html', dir:'coverage/'},  // https://github.com/karma-runner/karma-coverage/issues/123
+        {type: 'text'},
+        {type: 'text-summary'}
+      ],
+    }
+  });
 };
