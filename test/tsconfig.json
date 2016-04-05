@@ -2,7 +2,7 @@
     "compileOnSave": false,
     "filesGlob": [
         "**/*.{ts,tsx}",
-        "../typings/**/*.*.ts"
+        "../typings/main/**/*.*.ts"
     ],
     "compilerOptions": {
         "jsx": "preserve",
@@ -15,16 +15,19 @@
         "sourceMap": true
     },
     "files": [
-        "stores/Hoge.tests.ts",
-        "../typings/flux/flux.d.ts",
-        "../typings/jasmine/jasmine.d.ts",
-        "../typings/node/node.d.ts",
-        "../typings/react/react-addons-test-utils.d.ts",
-        "../typings/react/react-dom.d.ts",
-        "../typings/react/react.d.ts",
-        "../typings/tsd.d.ts"
+        "../typings/main/ambient/eventemitter2/index.d.ts",
+        "../typings/main/ambient/react/index.d.ts",
+        "../typings/main/ambient/react-dom/index.d.ts",
+        "../typings/main/ambient/react-addons-test-utils/index.d.ts",
+        "../typings/main/ambient/flux/index.d.ts",
+        "../typings/main/ambient/jasmine/index.d.ts",
+        "../typings/main/ambient/node/index.d.ts",
+        "stores/Hoge.tests.ts"
     ],
-    "exclude": [],
+    "exclude": [
+        "typings/browser.d.ts",
+        "typings/browser"
+    ],
     "atom": {
         "rewriteTsconfig": true
     }

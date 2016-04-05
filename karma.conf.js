@@ -2,17 +2,8 @@
 'use strict';
 
 var path = require('path');
-console.log("karma conf js");
-var webPackPath = path.join(__dirname, "webpack.config.js");
-console.log(webPackPath);
+var webPackPath = path.join(__dirname, "webpack.bower.config.js");
 var webpackConfig = require(webPackPath);
-
-console.log(process.cwd());
-console.log(__dirname);
-
-console.log(webpackConfig);
-console.log(webpackConfig.module);
-console.log(webpackConfig.resolve);
 
 module.exports = function(config) {
   // Documentation: https://karma-runner.github.io/0.13/config/configuration-file.html
@@ -46,7 +37,7 @@ module.exports = function(config) {
     },
 
     webpackMiddleware: {
-      quiet: true,
+      quiet: false,
       stats: {
         colors: true
       }
@@ -57,8 +48,8 @@ module.exports = function(config) {
       colors: {
         success: 'bgGreen',
         info: 'cyan',
-        warning: 'bgBlue',
-        error: 'bgRed'
+        warning: 'bgCyan',
+        error: 'red'
       }
     },
 
@@ -77,4 +68,7 @@ module.exports = function(config) {
       ],
     }
   });
+  
+  console.log("after set");
+  console.log(config);
 };

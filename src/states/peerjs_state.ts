@@ -1,7 +1,7 @@
 // NetworkのOn/Off, PeerJsのcon/disconnect, neighbourへの接続要求を管理するstate
 // offlineでpeerjsがconnectedということはあり得ないので枝刈り
 
-/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="../../typings/main.d.ts" />
 import OfflineState from './offline_state';
 import {EventEmitter2} from 'eventemitter2';
 import * as _ from "lodash";

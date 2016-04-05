@@ -3,7 +3,7 @@
 //2. This object is destroyed when PeerIo destroyed
 //3. This object may be unique, I'll make it singleton.
 
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/main.d.ts" />
 import {NeighbourTypeEnum} from './peer.io';
 import {NeighbourRecord, NeighbourSource, NeighbourHash} from './neighbour_record';
 import {PeerConnectOption, LinkComponentTemplate, DataLinkComponent, VideoLinkComponent, LinkComponentFactory} from './link_component';

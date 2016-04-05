@@ -1,7 +1,7 @@
 // オフライン Peer確立なし 接続要求もなし
 // 初期状態
 
-/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="../../typings/main.d.ts" />
 import {PeerJsStateEnum, PeerJsStateManager, PeerJsStateIf} from './peerjs_state';
 import OnlineState from './online_state';
 import ConnectedState from './connected_state';

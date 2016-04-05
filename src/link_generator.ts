@@ -14,7 +14,7 @@
 //8. This object doesn't close Link. It only generates it.
 //9. This object has some streams to answer to requests from Neighbour.
 
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/main.d.ts" />
 import {NeighbourRecord, NeighbourSource} from './neighbour_record';
 import {PeerConnectOption, LinkComponentTemplate, DataLinkComponent, VideoLinkComponent, LinkComponentFactory} from './link_component';
 import {PeerJsStateManager, PeerJsStateEnum} from './states/peerjs_state';

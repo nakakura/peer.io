@@ -1,12 +1,11 @@
-import Hoge from '../../src/main';
+import {PeerIo} from '../../src/peer.io';
 
 describe('Hoge', () => {
     beforeEach(() => {
     });
 
     it('giventaining a greeting and a remove button', () => {
-        var hoge = new Hoge();
-        expect(hoge.add(1, 1)).toBe(2);
+        expect(3).toBe(2);
     });
 });
 

@@ -4,7 +4,7 @@
 //2. This object is destroyed when user remove it.
 //3. This object has some delegated method.
 
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/main.d.ts" />
 import {PeerConnectOption, LinkComponentTemplate, DataLinkComponent, VideoLinkComponent, LinkComponentFactory} from './link_component';
 import {Util} from './Util';
 import {NeighbourTypeEnum} from './peer.io';

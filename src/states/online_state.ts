@@ -1,7 +1,7 @@
 // オンライン Peer確立なし 接続要求もなし
 // offlineでpeerjsがconnectedということはあり得ないので枝刈り
 
-/// <reference path="../../typings/tsd.d.ts" />
+/// <reference path="../../typings/main.d.ts" />
 import {PeerJsStateEnum, PeerJsStateManager, PeerJsStateIf} from './peerjs_state';
 import OfflineState from './offline_state';
 import ConnectedState from './connected_state';

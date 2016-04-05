@@ -3,7 +3,7 @@
 //2. This object is created only by LinkComponentFactory
 //3. When Link become down, this component is destroyed
 
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/main.d.ts" />
 import * as Record from './neighbour_record';
 import {Util, Link} from './Util';
 import {NeighbourTypeEnum} from './peer.io';

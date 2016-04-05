@@ -1,6 +1,6 @@
 // Main Controller
 
-/// <reference path="../typings/tsd.d.ts" />
+/// <reference path="../typings/main.d.ts" />
 import {Util} from './Util';
 import {NeighbourRecord, NeighbourSource, NeighbourHash} from './neighbour_record';
 import NeighbourStore from './neighbour_store'

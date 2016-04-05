@@ -2,7 +2,7 @@
     "compileOnSave": false,
     "filesGlob": [
         "**/*.{ts,tsx}",
-        "../typings/**/*.*.ts"
+        "../typings/main/**/*.*.ts"
     ],
     "compilerOptions": {
         "jsx": "preserve",
@@ -15,16 +15,18 @@
         "sourceMap": true
     },
     "files": [
+        "../typings/main/ambient/eventemitter2/index.d.ts",
+        "../typings/main.d.ts",
         "./Util.ts",
         "./link_component.ts",
         "./link_generator.ts",
         "./neighbour_record.ts",
         "./neighbour_store.ts",
-        "./peer.io.ts",
-        "../typings/eventemitter2/eventemitter2.d.ts",
-        "../typings/tsd.d.ts"
+        "./peer.io.ts"
     ],
     "exclude": [
+        "typings/browser.d.ts",
+        "typings/browser"
     ],
     "atom": {
         "rewriteTsconfig": true

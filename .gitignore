@@ -3,11 +3,13 @@
 .idea
 .idea?
 *.iml
-*.js
-*.js.map
+src/**/*.js
+src/**/*.js.map
+test/**/*.js
+test/**/*.js.map
 node_modules
 bower_components
-/src/typings
+typings
 !/karma.conf.js
 !/gulpfile.js
 !/test/**
