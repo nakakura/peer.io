@@ -24,6 +24,9 @@ module.exports = {
         libraryTarget: "umd"
     },
     module: {
+        noParse: [
+            /sinon/
+        ],
         loaders: [
             {
                 test: /\.ts(x?)$/,
@@ -58,7 +61,11 @@ module.exports = {
         extensions: ['', '.webpack.js', '.web.js', '.ts', '.tsx', '.js']
     },
     devServer: {
-        port: 8080
+        quiet: true,
+        https: true,
+        inline: true,
+        port: 8080,
+        contentBase: "./"
     }
 };
 

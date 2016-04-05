@@ -11,9 +11,19 @@ module.exports = {
       singleRun: false,
 
       // Fancy runner
-      plugins: ['karma-webpack', 'karma-jasmine', 'karma-mocha-reporter', /*'karma-junit-reporter', 'karma-coverage', */'karma-sourcemap-loader', 'karma-phantomjs-launcher'], 
+      plugins: ['karma-webpack', 
+      //'karma-jasmine', 
+      'karma-mocha-reporter',
+            'karma-mocha',
+            'karma-sourcemap-loader',
+'karma-sinon-chai',
+'karma-coverage',
+'karma-spec-reporte',
+      /*'karma-junit-reporter', 'karma-coverage', */'karma-sourcemap-loader', 'karma-phantomjs-launcher'], 
       reporters: ['mocha']
     };
+
+console.log(karmaConfig.plugins);
 
     new Server(karmaConfig, karmaCompleted).start();
 

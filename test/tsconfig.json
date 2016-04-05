@@ -15,6 +15,7 @@
         "sourceMap": true
     },
     "files": [
+        "../typings/main.d.ts",
         "../typings/main/ambient/eventemitter2/index.d.ts",
         "../typings/main/ambient/react/index.d.ts",
         "../typings/main/ambient/react-dom/index.d.ts",

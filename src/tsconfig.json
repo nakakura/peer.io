@@ -15,7 +15,6 @@
         "sourceMap": true
     },
     "files": [
-        "../typings/main/ambient/eventemitter2/index.d.ts",
         "../typings/main.d.ts",
         "./Util.ts",
         "./link_component.ts",
