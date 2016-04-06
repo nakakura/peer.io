@@ -23,172 +23,172 @@ import {NeighbourTypeEnum} from './peer.io';
 import {EventEmitter2} from 'eventemitter2';
 import * as _ from "lodash";
 
-export default class LinkGenerator extends EventEmitter2{
-  OnNewMediaStream = "on-new-mediastream-in-link_generator.ts";
-  OnNewDataChannel = "on-new-datachannel-in-link_generator.ts";
-  private state_: PeerJsStateManager;
-  private NeighbourSourceHash_: {[key: string]: NeighbourSource} = {};
-  private defaultStream_: MediaStream;
+export default class LinkGenerator extends EventEmitter2 {
+    static OnNewMediaStream = "on-new-mediastream-in-link_generator.ts";
+    static OnNewDataChannel = "on-new-datachannel-in-link_generator.ts";
+    private state_: PeerJsStateManager;
+    private NeighbourSourceHash_: { [key: string]: NeighbourSource } = {};
+    private defaultStream_: MediaStream;
 
-  constructor(private peer_: PeerJs.Peer) {
-    super();
+    constructor(private peer_: PeerJs.Peer) {
+        super();
 
-    this.state_ = new PeerJsStateManager();
-    this.state_.onStateChanged(this.onStateChanged_);
+        this.state_ = new PeerJsStateManager();
+        this.state_.onStateChanged(this.onStateChanged_);
 
-    this.checkNetworkStatus_();
-    this.wrapPeerEvent_();
-  }
-
-  setDefaultStream(stream: MediaStream){
-    this.defaultStream_ = stream;
-  }
-
-  addNeighbourSource(key: string, source: NeighbourSource){
-    this.NeighbourSourceHash_[key] = source;
-  }
-
-  removeNeighbourSource(key: string){
-    if(key in this.NeighbourSourceHash_) delete this.NeighbourSourceHash_[key];
-  }
-
-  //=============Network and PeerJs state methods start=========
-
-  private checkNetworkStatus_(){
-    (<any>Offline).options = { checks: { xhr: { url: 'https://skyway.io/dist/0.3/peer.min.js' } } };
-
-    Offline.on('up', ()=>{
-      this.state_.stateObject().network(this.state_, true);
-    });
-
-    Offline.on('down', ()=>{
-      this.state_.stateObject().network(this.state_, false);
-    });
-
-    if(Offline.state === 'up'){
-      this.state_.stateObject().network(this.state_, true);
+        this.checkNetworkStatus_();
+        this.wrapPeerEvent_();
     }
 
-    Offline.check();
-  }
-
-  private onStateChanged_ = (state: PeerJsStateEnum)=>{
-    switch (state){
-      case PeerJsStateEnum.initial:
-      break;
-      case PeerJsStateEnum.online:
-      if(!this.peer_.disconnected) {
-        this.state_.stateObject().peer(this.state_, true);
-      }
-      break;
-      case PeerJsStateEnum.connected:
-      setTimeout(this._establishAllPeer, Util.waitTime(2000, 5000));
-      break;
-      case PeerJsStateEnum.wait_closing:
-      break;
-      default:
-      break;
+    setDefaultStream(stream: MediaStream) {
+        this.defaultStream_ = stream;
     }
-  };
 
-  private wrapPeerEvent_(){
-    this.peer_.on("open", ()=>{
-      this.state_.stateObject().peer(this.state_, true);
-    });
-    this.peer_.on('error', (err)=>{ console.log(err); });
-    this.peer_.on('disconnected', ()=>{
-      this.state_.stateObject().peer(this.state_, false);
-    });
-    this.peer_.on('connection', this.onRecvConnect_);
-    this.peer_.on('call', this.onRecvCall_);
-  }
-
-  //=============peer event and change state end===========
-
-  //=============Link generation methods start===========
-
-  establishLink = (neighbour: NeighbourRecord)=>{
-    switch(neighbour.type()){
-      case NeighbourTypeEnum.video:
-      this.tryCall_(neighbour);
-      break;
-      case NeighbourTypeEnum.data:
-      this.tryConnect_(neighbour);
-      break;
+    addNeighbourSource(key: string, source: NeighbourSource) {
+        this.NeighbourSourceHash_[key] = source;
     }
-  };
 
-  private findNeighbour_(key: string): NeighbourRecord{
-    var source = _.find(this.NeighbourSourceHash_, (item: NeighbourSource)=>{
-      return key in item();
-    });
-    if(source) return source()[key];
-    return null;
-  }
-
-  private neighbourArray_(): Array<NeighbourRecord>{
-    return  _.reduce(this.NeighbourSourceHash_, (container: Array<NeighbourRecord>, val: NeighbourSource, key: string)=>{
-      return _.reduce(val(), (innerContainer: Array<NeighbourRecord>, record: NeighbourRecord, key: string)=>{
-        return innerContainer.concat(record);
-      }, container);
-    }, []);
-  }
-
-  private targetNeighbours_(): Array<NeighbourRecord>{
-    var neighbours = this.neighbourArray_();
-    return _.filter(neighbours, (neighbour: NeighbourRecord)=>{
-      return !neighbour.isEstablished();
-    });
-  }
-
-  private _establishAllPeer = ()=>{
-    _.each(this.targetNeighbours_(), this.establishLink);
-  };
-
-  private tryCall_(neighbour: NeighbourRecord){
-    var streams = neighbour.streams();
-    var retStream = this.defaultStream_;
-    if(streams && streams.length > 0) retStream = streams[0];
-    var mediaConnection = this.peer_.call(neighbour.peerID(), retStream);
-    if(!mediaConnection) return;
-    mediaConnection.on("stream", (stream: MediaStream)=>{
-      var link = LinkComponentFactory.createLinkComponent(neighbour.peerID(), mediaConnection);
-      this.emit(this.OnNewMediaStream, link, stream);
-    });
-  }
-
-  private onRecvCall_ = (mediaConnection: PeerJs.MediaConnection)=> {
-    var neighbourID = mediaConnection.peer;
-    var neighbour = this.findNeighbour_(Util.key(neighbourID, NeighbourTypeEnum.video));
-    var retStream = this.defaultStream_;
-    if(neighbour){
-      var streams = neighbour.streams();
-      if(streams && streams.length > 0) {
-        retStream = streams[0];
-      }
+    removeNeighbourSource(key: string) {
+        if (key in this.NeighbourSourceHash_) delete this.NeighbourSourceHash_[key];
     }
-    mediaConnection.answer(retStream);
-    mediaConnection.on("stream", (stream: MediaStream)=>{
-      var link = LinkComponentFactory.createLinkComponent(neighbourID, mediaConnection);
-      this.emit(this.OnNewMediaStream, link, stream);
-    });
-  };
 
-  private tryConnect_(neighbour: NeighbourRecord){
-    var dataConnection = this.peer_.connect(neighbour.peerID(), neighbour.dataChannelOption());
-    if(!dataConnection) return;
-    dataConnection.on('open', ()=>{
-      var link = LinkComponentFactory.createLinkComponent(neighbour.peerID(), dataConnection);
-      this.emit(this.OnNewDataChannel, link);
-    });
-  }
+    //=============Network and PeerJs state methods start=========
 
-  private onRecvConnect_ = (dataConnection: PeerJs.DataConnection)=> {
-    var neighbourID = dataConnection.peer;
-    dataConnection.on('open', ()=>{
-      var link = LinkComponentFactory.createLinkComponent(neighbourID, dataConnection);
-      this.emit(this.OnNewDataChannel, link);
-    });
-  };
-  //=============Link generation methods end===========
+    private checkNetworkStatus_() {
+        (<any>Offline).options = { checks: { xhr: { url: 'https://skyway.io/dist/0.3/peer.min.js' } } };
+
+        Offline.on('up', () => {
+            this.state_.stateObject().network(this.state_, true);
+        });
+
+        Offline.on('down', () => {
+            this.state_.stateObject().network(this.state_, false);
+        });
+
+        if (Offline.state === 'up') {
+            this.state_.stateObject().network(this.state_, true);
+        }
+
+        Offline.check();
+    }
+
+    private onStateChanged_ = (state: PeerJsStateEnum) => {
+        switch (state) {
+            case PeerJsStateEnum.initial:
+                break;
+            case PeerJsStateEnum.online:
+                if (!this.peer_.disconnected) {
+                    this.state_.stateObject().peer(this.state_, true);
+                }
+                break;
+            case PeerJsStateEnum.connected:
+                setTimeout(this._establishAllPeer, Util.waitTime(2000, 5000));
+                break;
+            case PeerJsStateEnum.wait_closing:
+                break;
+            default:
+                break;
+        }
+    };
+
+    private wrapPeerEvent_() {
+        this.peer_.on("open", () => {
+            this.state_.stateObject().peer(this.state_, true);
+        });
+        this.peer_.on('error', (err) => { console.log(err); });
+        this.peer_.on('disconnected', () => {
+            this.state_.stateObject().peer(this.state_, false);
+        });
+        this.peer_.on('connection', this.onRecvConnect_);
+        this.peer_.on('call', this.onRecvCall_);
+    }
+
+    //=============peer event and change state end===========
+
+    //=============Link generation methods start===========
+
+    establishLink = (neighbour: NeighbourRecord) => {
+        switch (neighbour.type()) {
+            case NeighbourTypeEnum.video:
+                this.tryCall_(neighbour);
+                break;
+            case NeighbourTypeEnum.data:
+                this.tryConnect_(neighbour);
+                break;
+        }
+    };
+
+    private findNeighbour_(key: string): NeighbourRecord {
+        var source = _.find(this.NeighbourSourceHash_, (item: NeighbourSource) => {
+            return key in item();
+        });
+        if (source) return source()[key];
+        return null;
+    }
+
+    private neighbourArray_(): Array<NeighbourRecord> {
+        return _.reduce(this.NeighbourSourceHash_, (container: Array<NeighbourRecord>, val: NeighbourSource, key: string) => {
+            return _.reduce(val(), (innerContainer: Array<NeighbourRecord>, record: NeighbourRecord, key: string) => {
+                return innerContainer.concat(record);
+            }, container);
+        }, []);
+    }
+
+    private targetNeighbours_(): Array<NeighbourRecord> {
+        var neighbours = this.neighbourArray_();
+        return _.filter(neighbours, (neighbour: NeighbourRecord) => {
+            return !neighbour.isEstablished();
+        });
+    }
+
+    private _establishAllPeer = () => {
+        _.each(this.targetNeighbours_(), this.establishLink);
+    };
+
+    private tryCall_(neighbour: NeighbourRecord) {
+        var streams = neighbour.streams();
+        var retStream = this.defaultStream_;
+        if (streams && streams.length > 0) retStream = streams[0];
+        var mediaConnection = this.peer_.call(neighbour.peerID(), retStream);
+        if (!mediaConnection) return;
+        mediaConnection.on("stream", (stream: MediaStream) => {
+            var link = LinkComponentFactory.createLinkComponent(neighbour.peerID(), mediaConnection);
+            this.emit(LinkGenerator.OnNewMediaStream, link, stream);
+        });
+    }
+
+    private onRecvCall_ = (mediaConnection: PeerJs.MediaConnection) => {
+        var neighbourID = mediaConnection.peer;
+        var neighbour = this.findNeighbour_(Util.key(neighbourID, NeighbourTypeEnum.video));
+        var retStream = this.defaultStream_;
+        if (neighbour) {
+            var streams = neighbour.streams();
+            if (streams && streams.length > 0) {
+                retStream = streams[0];
+            }
+        }
+        mediaConnection.answer(retStream);
+        mediaConnection.on("stream", (stream: MediaStream) => {
+            var link = LinkComponentFactory.createLinkComponent(neighbourID, mediaConnection);
+            this.emit(LinkGenerator.OnNewMediaStream, link, stream);
+        });
+    };
+
+    private tryConnect_(neighbour: NeighbourRecord) {
+        var dataConnection = this.peer_.connect(neighbour.peerID(), neighbour.dataChannelOption());
+        if (!dataConnection) return;
+        dataConnection.on('open', () => {
+            var link = LinkComponentFactory.createLinkComponent(neighbour.peerID(), dataConnection);
+            this.emit(LinkGenerator.OnNewDataChannel, link);
+        });
+    }
+
+    private onRecvConnect_ = (dataConnection: PeerJs.DataConnection) => {
+        var neighbourID = dataConnection.peer;
+        dataConnection.on('open', () => {
+            var link = LinkComponentFactory.createLinkComponent(neighbourID, dataConnection);
+            this.emit(LinkGenerator.OnNewDataChannel, link);
+        });
+    };
+    //=============Link generation methods end===========
 }

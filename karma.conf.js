@@ -11,6 +11,7 @@ module.exports = function(config) {
         browsers: ['PhantomJS'],
 
         files: [
+            "./bower_components/offline/offline.min.js",
             'test/import-babel-polyfill.js', // This ensures we have the es6 shims in place from babel
             'test/**/*.tests.ts',
             'test/**/*.tests.tsx'
