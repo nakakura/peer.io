@@ -40,9 +40,9 @@ describe('LinkGenerator', () => {
         done();
     });
     
-    it("on state change to call", function (done) {
+    it("on state change to call", (done)=>{
         //this test will fail if test client is offline.
-        var link = {
+        var link: any = {
             answer: function(stream){},
             localStream: "hoge",
             on: function(event){},
@@ -66,7 +66,7 @@ describe('LinkGenerator', () => {
         };
         var spy_peer_on = sinon.spy(peer, "on");
         var source: any = function(){
-            var neighbour = LinkComponentFactory.createLinkComponent("neighbour", link);
+            var neighbour: any = LinkComponentFactory.createLinkComponent("neighbour", link);
             neighbour.streams = function(){ return [localStream] };
             neighbour.isEstablished = function(){ return false; };
             return {neighbour: neighbour};
@@ -91,7 +91,7 @@ describe('LinkGenerator', () => {
         onStream("new stream");
     });
 
-    it("on call from neighbour", function (done) {
+    it("on call from neighbour", (done)=>{
         //this test will fail if test client is offline.
         var link = {
             answer: function(stream){},
@@ -135,7 +135,7 @@ describe('LinkGenerator', () => {
         onStream("new stream");
     });
 
-    it("on state change to connect", function (done) {
+    it("on state change to connect", (done)=>{
         //this test will fail if test client is offline.
         var link: any = {
             on: function(event){},
@@ -182,7 +182,7 @@ describe('LinkGenerator', () => {
         onDataOpen();
     });
 
-    it("on connect from neighbour", function (done) {
+    it("on connect from neighbour", (done)=>{
         //this test will fail if test client is offline.
         var link = {
             on: function(event){},

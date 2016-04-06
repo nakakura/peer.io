@@ -15,7 +15,6 @@
         "sourceMap": true
     },
     "files": [
-        "../bower_components/offline/offline.min.js",
         "../typings/main.d.ts",
         "../typings/main/ambient/eventemitter2/index.d.ts",
         "../typings/main/ambient/react/index.d.ts",

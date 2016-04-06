@@ -36,7 +36,7 @@ describe('DataLinkComponent', () => {
     });
     
     //=======================send========================
-    it ("send to established link", function(done) {
+    it ("send to established link", (done)=>{
         var spy_send = sinon.spy(link, 'send');
         dataLinkComp = LinkComponentFactory.createLinkComponent(neighbourID, link);
         expect(dataLinkComp.isEstablished()).to.deep.equal(true);
@@ -47,7 +47,7 @@ describe('DataLinkComponent', () => {
         done();
     });
 
-    it ("send to not established link", function(done) {
+    it ("send to not established link", (done)=>{
         link.open = false;
         var spy_send = sinon.spy(link, 'send');
         dataLinkComp = LinkComponentFactory.createLinkComponent(neighbourID, link);
@@ -58,7 +58,7 @@ describe('DataLinkComponent', () => {
         done();
     });
 
-    it ("send to undefined link", function(done) {
+    it ("send to undefined link", (done)=>{
         link.open = false;
         var spy_send = sinon.spy(link, 'send');
         dataLinkComp = LinkComponentFactory.createLinkComponent(neighbourID, link);
@@ -72,7 +72,7 @@ describe('DataLinkComponent', () => {
     //=======================send========================
 
     //=======================recv========================
-    it ("recv data", function(done) {
+    it ("recv data", (done)=>{
         var spy_on = sinon.spy(link, 'on');
         var callback = sinon.spy();
 
@@ -89,7 +89,7 @@ describe('DataLinkComponent', () => {
     //=======================recv========================
 
     //=======================close========================
-    it ("on close", function(done) {
+    it ("on close", (done)=>{
         var spy_on = sinon.spy(link, 'on');
         var callback = sinon.spy();
         dataLinkComp = LinkComponentFactory.createLinkComponent(neighbourID, link);
@@ -103,7 +103,7 @@ describe('DataLinkComponent', () => {
         done();
     });
 
-    it ("close", function(done) {
+    it ("close", (done)=>{
         var spy_on = sinon.spy(link, 'on');
         var callback = sinon.spy();
         dataLinkComp = LinkComponentFactory.createLinkComponent(neighbourID, link);
